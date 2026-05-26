@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_close($stmt);
 
             if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === 0) {
-                $uploadDir = "../../uploads/products/";
+                $uploadDir = __DIR__ . "/../../uploads/products/";
 
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
@@ -104,14 +104,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = "Product saved, but image type is invalid. Only JPG, PNG, and WEBP are allowed.";
                 } else {
                     if (move_uploaded_file($_FILES["product_image"]["tmp_name"], $targetFile)) {
-                        $imgSql = "INSERT INTO nps_product_images (product_id, image_path, is_primary) VALUES (?, ?, 1)";
-                        $stmt = mysqli_prepare($conn, $imgSql);
-                        mysqli_stmt_bind_param($stmt, "is", $newProductId, $dbPath);
-                        mysqli_stmt_execute($stmt);
-                        mysqli_stmt_close($stmt);
-                    } else {
-                        $error = "Product saved, but image upload failed.";
-                    }
+    $imgSql = "INSERT INTO nps_product_images (product_id, image_path, is_primary) VALUES (?, ?, 1)";
+    $stmt = mysqli_prepare($conn, $imgSql);
+    mysqli_stmt_bind_param($stmt, "is", $newProductId, $dbPath);
+    if (!mysqli_stmt_execute($stmt)) {
+        $error = "Image upload failed to save: " . mysqli_stmt_error($stmt);
+    }
+    mysqli_stmt_close($stmt);
+} else {
+    $error = "Product saved, but image upload failed. Check folder permissions.";
+}
                 }
             }
 
@@ -550,11 +552,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .footer-top {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 24px;
-            padding: 28px;
-        }
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 28px;
+}
 
         .footer h4 {
             font-size: 14px;
@@ -659,7 +661,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="page-wrapper">
     <div class="topbar">
-        <img src="/NextPickStore/assets/images/logos/logo.png" alt="NextPick Logo">
+        <img src="/NextPickStore/assets/images/Logos/nextpickstore-logo.png">
 
         <div class="topbar-right">
             <div class="seller-badge"><?php echo strtoupper(substr($sellerName, 0, 1)); ?></div>
@@ -826,59 +828,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <footer class="footer">
-        <div class="footer-top">
-            <div>
-                <h4>E-commerce support</h4>
-                <p>NEXTPICK</p>
-                <p>Manama, Bahrain</p>
-                <p>Phone: +973 123 4567</p>
-                <p>Email: support@nextpick.com</p>
-            </div>
+  <div class="footer-top">
 
-            <div>
-                <h4>Working hours</h4>
-                <p>Monday to Friday: 09:00 - 18:00</p>
-                <p>Saturday: 10:00 - 16:00</p>
-                <p>Sunday: Closed</p>
-            </div>
-
-            <div>
-                <h4>About us</h4>
-                <ul>
-                    <li><a href="#">Stores</a></li>
-                    <li><a href="#">Corporate website</a></li>
-                    <li><a href="#">Exclusive Offers</a></li>
-                    <li><a href="#">Career</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Help & Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li>
-                    <li><a href="#">Payments</a></li>
-                    <li><a href="#">Product returns</a></li>
-                    <li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-
-            <div class="newsletter">
-                <h4>Sign up for exclusive offers and the latest news!</h4>
-                <input type="email" placeholder="Your email...">
-                <div class="socials">
-                </div>
-            </div>
+        <div>
+            <h4>E-commerce support</h4>
+            <p>NEXTPICK</p>
+            <p>Manama, Bahrain</p>
+            <p>Phone: +973 123 4567</p>
+            <p>Email: support@nextpick.com</p>
         </div>
 
-        <div class="footer-bottom">
-            <div>© 2024 NEXTPICK. All Rights Reserved.</div>
-            <div class="footer-links">
-                <a href="#">Privacy policy</a>
-                <a href="#">Cookie settings</a>
-                <a href="#">Terms and conditions</a>
-                <a href="#">Imprint</a>
-            </div>
+        <div>
+            <h4>Working hours</h4>
+            <p>Monday to Friday: 09:00 - 18:00</p>
+            <p>Saturday: 10:00 - 16:00</p>
+            <p>Sunday: Closed</p>
         </div>
+
+        <div>
+            <h4>About us</h4>
+            <ul>
+                <li><a href="#">Stores</a></li>
+                <li><a href="#">Corporate website</a></li>
+                <li><a href="#">Exclusive Offers</a></li>
+                <li><a href="#">Career</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>Help & Support</h4>
+            <ul>
+                <li><a href="#">Help center</a></li>
+                <li><a href="#">Payments</a></li>
+                <li><a href="#">Product returns</a></li>
+                <li><a href="#">FAQ</a></li>
+            </ul>
+        </div>
+
+        
+        </div>
+
+    </div> <!-- ✅ THIS WAS MISSING -->
+
+    <div class="footer-bottom">
+        <div>© 2024 NEXTPICK. All Rights Reserved.</div>
+        <div class="footer-links">
+            <a href="#">Privacy policy</a>
+            <a href="#">Cookie settings</a>
+            <a href="#">Terms and conditions</a>
+            <a href="#">Imprint</a>
+        </div>
+    </div>
+</div>
     </footer>
 </div>
 

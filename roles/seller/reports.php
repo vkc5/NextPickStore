@@ -836,11 +836,11 @@ function renderStars($count) {
         }
 
         .footer-top {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 24px;
-            padding: 28px;
-        }
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 28px;
+}
 
         .footer h4 {
             font-size: 14px;
@@ -940,7 +940,7 @@ function renderStars($count) {
 
 <div class="page-wrapper">
     <div class="topbar">
-        <img src="/NextPickStore/assets/images/logos/logo.png" alt="NextPick Logo">
+<img src="/NextPickStore/assets/images/Logos/nextpickstore-logo.png" alt="NextPick Logo">
 
         <div class="topbar-right">
             <div class="seller-badge"><?php echo strtoupper(substr($sellerName, 0, 1)); ?></div>
@@ -1158,74 +1158,50 @@ function renderStars($count) {
         </main>
     </div>
 
-    <footer class="footer">
-  <div class="footer-top">
-
-        <div>
-            <h4>E-commerce support</h4>
-            <p>NEXTPICK</p>
-            <p>Manama, Bahrain</p>
-            <p>Phone: +973 123 4567</p>
-            <p>Email: support@nextpick.com</p>
-        </div>
-
-        <div>
-            <h4>Working hours</h4>
-            <p>Monday to Friday: 09:00 - 18:00</p>
-            <p>Saturday: 10:00 - 16:00</p>
-            <p>Sunday: Closed</p>
-        </div>
-
-        <div>
-            <h4>About us</h4>
-            <ul>
-                <li><a href="#">Stores</a></li>
-                <li><a href="#">Corporate website</a></li>
-                <li><a href="#">Exclusive Offers</a></li>
-                <li><a href="#">Career</a></li>
-            </ul>
-        </div>
-
-        <div>
-            <h4>Help & Support</h4>
-            <ul>
-                <li><a href="#">Help center</a></li>
-                <li><a href="#">Payments</a></li>
-                <li><a href="#">Product returns</a></li>
-                <li><a href="#">FAQ</a></li>
-            </ul>
-        </div>
-
-        <!-- YOUR BOX (UNCHANGED STYLE, JUST FIXED POSITION) -->
-        <div class="seller-footer-box">
-            
-            
-            
-            
-           
-
-            <div class="social-box">
-                <span>Follow us</span>
-                <div class="social-icons">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                </div>
+   <footer class="footer">
+        <div class="footer-top">
+            <div>
+                <h4>E-commerce support</h4>
+                <p>NEXTPICK</p>
+                <p>Manama, Bahrain</p>
+                <p>Phone: +973 123 4567</p>
+                <p>Email: support@nextpick.com</p>
+            </div>
+            <div>
+                <h4>Working hours</h4>
+                <p>Monday to Friday: 09:00 - 18:00</p>
+                <p>Saturday: 10:00 - 16:00</p>
+                <p>Sunday: Closed</p>
+            </div>
+            <div>
+                <h4>About us</h4>
+                <ul>
+                    <li><a href="#">Stores</a></li>
+                    <li><a href="#">Corporate website</a></li>
+                    <li><a href="#">Exclusive Offers</a></li>
+                    <li><a href="#">Career</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Help & Support</h4>
+                <ul>
+                    <li><a href="#">Help center</a></li>
+                    <li><a href="#">Payments</a></li>
+                    <li><a href="#">Product returns</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
             </div>
         </div>
-
-    </div> <!-- ✅ THIS WAS MISSING -->
-
-    <div class="footer-bottom">
-        <div>© 2024 NEXTPICK. All Rights Reserved.</div>
-        <div class="footer-links">
-            <a href="#">Privacy policy</a>
-            <a href="#">Cookie settings</a>
-            <a href="#">Terms and conditions</a>
-            <a href="#">Imprint</a>
+        <div class="footer-bottom">
+            <div>© 2024 NEXTPICK. All Rights Reserved.</div>
+            <div class="footer-links">
+                <a href="#">Privacy policy</a>
+                <a href="#">Cookie settings</a>
+                <a href="#">Terms and conditions</a>
+                <a href="#">Imprint</a>
+            </div>
         </div>
-    </div>
+    </footer>
 </div>
-
 </body>
 </html>
