@@ -503,7 +503,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="page-wrapper">
     <div class="topbar">
-        <img src="../../assets/images/logos/logo.png" alt="NextPick Logo">
+        <img src="/NextPickStore/assets/images/Logos/nextpickstore-logo.png"
+
     </div>
 
     <div class="main-layout">
@@ -647,10 +648,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </ul>
             </div>
 
-            <div class="newsletter">
-                <h4>Sign up for exclusive offers and the latest news!</h4>
-                <input type="email" placeholder="Your email...">
-            </div>
+            
         </div>
 
         <div class="footer-bottom">

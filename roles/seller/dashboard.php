@@ -7,6 +7,7 @@ $conn = getConnection();
 
 $sellerId   = $_SESSION['user_id'];
 $sellerName = $_SESSION['full_name'] ?? 'Seller';
+$firstName  = $sellerName ? explode(' ', $sellerName)[0] : 'Seller';
 
 /* =========================
    DASHBOARD COUNTS
@@ -196,6 +197,9 @@ foreach ($topProducts as $item) {
             padding: 18px 28px;
             border-bottom: 1px solid #ececec;
             background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .topbar img {
@@ -203,6 +207,39 @@ foreach ($topProducts as $item) {
             width: auto;
             object-fit: contain;
             display: block;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .seller-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #e8e8ff;
+            color: #3158ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .topbar-user {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .topbar-user strong {
+            font-size: 14px;
+        }
+
+        .topbar-user span {
+            font-size: 12px;
+            color: #666;
         }
 
         .main-layout {
@@ -216,8 +253,6 @@ foreach ($topProducts as $item) {
             padding: 28px 18px;
             background: #fff;
             flex-shrink: 0;
-            position: relative;
-            z-index: 20;
         }
 
         .sidebar h2 {
@@ -235,10 +270,6 @@ foreach ($topProducts as $item) {
             gap: 8px;
         }
 
-        .menu li {
-            margin: 0;
-        }
-
         .menu a {
             display: flex;
             align-items: center;
@@ -250,9 +281,7 @@ foreach ($topProducts as $item) {
             font-size: 15px;
             font-weight: 500;
             transition: 0.2s ease;
-            position: relative;
-            z-index: 30;
-            pointer-events: auto;
+            white-space: nowrap;
         }
 
         .menu a:hover {
@@ -284,14 +313,15 @@ foreach ($topProducts as $item) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             flex-wrap: wrap;
+            gap: 12px;
         }
 
         .content-header h1 {
             font-size: 32px;
             margin-bottom: 6px;
+            color: #111827;
         }
 
         .content-header p {
@@ -406,9 +436,9 @@ foreach ($topProducts as $item) {
             text-transform: lowercase;
         }
 
-        .pending { background: #fff5d6; color: #9c6b00; }
+        .pending   { background: #fff5d6; color: #9c6b00; }
         .confirmed { background: #e7f1ff; color: #1c5fb8; }
-        .shipped { background: #ede8ff; color: #6246d6; }
+        .shipped   { background: #ede8ff; color: #6246d6; }
         .delivered { background: #e7faed; color: #1b8a46; }
         .cancelled { background: #ffe8e8; color: #b42318; }
 
@@ -513,11 +543,11 @@ foreach ($topProducts as $item) {
         }
 
         .footer-top {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 24px;
-            padding: 28px;
-        }
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 28px;
+}
 
         .footer h4 {
             font-size: 14px;
@@ -534,15 +564,6 @@ foreach ($topProducts as $item) {
 
         .footer ul {
             list-style: none;
-        }
-
-        .newsletter input {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #3158ff;
-            border-radius: 8px;
-            outline: none;
-            margin-top: 8px;
         }
 
         .footer-bottom {
@@ -609,77 +630,32 @@ foreach ($topProducts as $item) {
 <body>
 
 <div class="page-wrapper">
+
     <div class="topbar">
-        <img src="../../assets/images/logos/logo.png" alt="NextPick Logo">
+        <img src="/NextPickStore/assets/images/Logos/nextpickstore-logo.png" alt="NextPick Logo">
+        <div class="topbar-right">
+            <div class="seller-badge"><?php echo strtoupper(substr($sellerName, 0, 1)); ?></div>
+            <div class="topbar-user">
+                <strong><?php echo htmlspecialchars($sellerName); ?></strong>
+                <span>Seller</span>
+            </div>
+        </div>
     </div>
 
     <div class="main-layout">
         <aside class="sidebar">
-            <h2>Welcome,<br><?php echo htmlspecialchars(explode(' ', $sellerName)[0]); ?></h2>
+            <h2>Welcome,<br><?php echo htmlspecialchars($firstName); ?></h2>
 
             <ul class="menu">
-                <li>
-                    <a href="dashboard.php" class="active">
-                        <img src="../../assets/images/icons/seller icon/dashboard.png" alt="Dashboard" class="menu-icon-img">
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="my_products.php">
-                        <img src="../../assets/images/icons/seller icon/inventory-management.png" alt="Inventory Management" class="menu-icon-img">
-                        <span>Inventory Management</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="add_product.php">
-                        <img src="../../assets/images/icons/seller icon/add-to-cart.png" alt="Add Product" class="menu-icon-img">
-                        <span>Add Product</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="../buyer/my_orders.php">
-                        <img src="../../assets/images/icons/seller icon/manifest.png" alt="Orders" class="menu-icon-img">
-                        <span>Orders</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <img src="../../assets/images/icons/seller icon/client.png" alt="Customer Data" class="menu-icon-img">
-                        <span>Customer Data</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="reports.php">
-                        <img src="../../assets/images/icons/seller icon/seo-report.png" alt="Analytics & Reports" class="menu-icon-img">
-                        <span>Analytics & Reports</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <img src="../../assets/images/icons/seller icon/settings.png" alt="Settings" class="menu-icon-img">
-                        <span>Settings</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <img src="../../assets/images/icons/seller icon/customer-support.png" alt="Help Center" class="menu-icon-img">
-                        <span>Help Center</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="../../auth/logout.php">
-                        <img src="../../assets/images/icons/seller icon/logout.png" alt="Log out" class="menu-icon-img">
-                        <span>Log out</span>
-                    </a>
-                </li>
+                <li><a href="dashboard.php" class="active"><img src="../../assets/images/icons/seller icon/dashboard.png" alt="" class="menu-icon-img"><span>Dashboard</span></a></li>
+                <li><a href="my_products.php"><img src="../../assets/images/icons/seller icon/inventory-management.png" alt="" class="menu-icon-img"><span>Inventory Management</span></a></li>
+                <li><a href="add_product.php"><img src="../../assets/images/icons/seller icon/add-to-cart.png" alt="" class="menu-icon-img"><span>Add Product</span></a></li>
+                <li><a href="../buyer/my_orders.php"><img src="../../assets/images/icons/seller icon/manifest.png" alt="" class="menu-icon-img"><span>Orders</span></a></li>
+                <li><a href="#"><img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
+                <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
+                <li><a href="#"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
+                <li><a href="#"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
+                <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
             </ul>
         </aside>
 
@@ -689,7 +665,6 @@ foreach ($topProducts as $item) {
                     <h1>Dashboard</h1>
                     <p>Manage your store, products, stock, and orders from one place.</p>
                 </div>
-
                 <div class="header-actions">
                     <a href="add_product.php"><button class="btn btn-primary">+ Add Product</button></a>
                     <a href="my_products.php"><button class="btn btn-light">View Products</button></a>
@@ -701,17 +676,14 @@ foreach ($topProducts as $item) {
                     <div class="label">TOTAL Revenue</div>
                     <div class="value">$<?php echo number_format($revenue, 2); ?></div>
                 </div>
-
                 <div class="stat-card">
                     <div class="label">Active Orders</div>
                     <div class="value"><?php echo $activeOrders; ?></div>
                 </div>
-
                 <div class="stat-card">
                     <div class="label">Total Products</div>
                     <div class="value"><?php echo $totalProducts; ?></div>
                 </div>
-
                 <div class="stat-card">
                     <div class="label">Out of Stock Items</div>
                     <div class="value danger"><?php echo $outOfStock; ?></div>
@@ -721,7 +693,6 @@ foreach ($topProducts as $item) {
             <div class="cards-row">
                 <div class="card">
                     <div class="card-title">Recent Orders</div>
-
                     <div class="table-wrap">
                         <table>
                             <thead>
@@ -749,9 +720,7 @@ foreach ($topProducts as $item) {
                                         </tr>
                                     <?php } ?>
                                 <?php } else { ?>
-                                    <tr>
-                                        <td colspan="5">No recent orders found.</td>
-                                    </tr>
+                                    <tr><td colspan="5">No recent orders found.</td></tr>
                                 <?php } ?>
                             </tbody>
                         </table>
@@ -760,7 +729,6 @@ foreach ($topProducts as $item) {
 
                 <div class="card">
                     <div class="card-title">Low Stock Alerts</div>
-
                     <div class="alert-list">
                         <?php if (!empty($lowStockProducts)) { ?>
                             <?php foreach ($lowStockProducts as $product) { ?>
@@ -782,20 +750,15 @@ foreach ($topProducts as $item) {
             <div class="bottom-row">
                 <div class="card">
                     <div class="card-title">Top-Selling Products</div>
-
                     <div class="chart-box">
                         <?php if (!empty($topProducts)) { ?>
                             <?php foreach ($topProducts as $item) {
                                 $height = ($item['total_sold'] / $maxSold) * 180;
-                                if ($height < 20) {
-                                    $height = 20;
-                                }
+                                if ($height < 20) $height = 20;
                             ?>
                                 <div class="bar-group">
                                     <div class="bar" style="height: <?php echo $height; ?>px;"></div>
-                                    <div class="bar-label">
-                                        <?php echo htmlspecialchars(mb_strimwidth($item['product_name'], 0, 18, '...')); ?>
-                                    </div>
+                                    <div class="bar-label"><?php echo htmlspecialchars(mb_strimwidth($item['product_name'], 0, 18, '...')); ?></div>
                                 </div>
                             <?php } ?>
                         <?php } else { ?>
@@ -806,7 +769,6 @@ foreach ($topProducts as $item) {
 
                 <div class="card product-table">
                     <div class="card-title">Top Products Summary</div>
-
                     <div class="table-wrap">
                         <table>
                             <thead>
@@ -824,9 +786,7 @@ foreach ($topProducts as $item) {
                                         </tr>
                                     <?php } ?>
                                 <?php } else { ?>
-                                    <tr>
-                                        <td colspan="2">No product data available.</td>
-                                    </tr>
+                                    <tr><td colspan="2">No product data available.</td></tr>
                                 <?php } ?>
                             </tbody>
                         </table>
@@ -845,14 +805,12 @@ foreach ($topProducts as $item) {
                 <p>Phone: +973 123 4567</p>
                 <p>Email: support@nextpick.com</p>
             </div>
-
             <div>
                 <h4>Working hours</h4>
                 <p>Monday to Friday: 09:00 - 18:00</p>
                 <p>Saturday: 10:00 - 16:00</p>
                 <p>Sunday: Closed</p>
             </div>
-
             <div>
                 <h4>About us</h4>
                 <ul>
@@ -862,7 +820,6 @@ foreach ($topProducts as $item) {
                     <li><a href="#">Career</a></li>
                 </ul>
             </div>
-
             <div>
                 <h4>Help & Support</h4>
                 <ul>
@@ -872,13 +829,7 @@ foreach ($topProducts as $item) {
                     <li><a href="#">FAQ</a></li>
                 </ul>
             </div>
-
-            <div class="newsletter">
-                <h4>Sign up for exclusive offers and the latest news!</h4>
-                <input type="email" placeholder="Your email...">
-            </div>
         </div>
-
         <div class="footer-bottom">
             <div>© 2024 NEXTPICK. All Rights Reserved.</div>
             <div class="footer-links">
@@ -889,7 +840,7 @@ foreach ($topProducts as $item) {
             </div>
         </div>
     </footer>
-</div>
 
+</div>
 </body>
 </html>
