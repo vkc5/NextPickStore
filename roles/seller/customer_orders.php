@@ -1,0 +1,561 @@
+<?php
+include_once '../../includes/auth_guard.php';
+requireRole(['Seller']);
+include_once '../../includes/config.php';
+
+$conn = getConnection();
+
+$sellerId   = $_SESSION['user_id'];
+$sellerName = $_SESSION['full_name'] ?? 'Seller';
+$firstName  = $sellerName ? explode(' ', $sellerName)[0] : 'Seller';
+
+$customerId = (int)($_GET['id'] ?? 0);
+
+if ($customerId <= 0) {
+    header('Location: customer_data.php');
+    exit;
+}
+
+/* =========================
+   LOAD CUSTOMER
+========================= */
+$customerSql = "
+    SELECT
+        u.user_id,
+        u.full_name,
+        u.email,
+        u.phone_number,
+        u.address,
+        u.status,
+        COUNT(DISTINCT o.order_id) AS total_orders,
+        MAX(o.order_date) AS last_order_date
+    FROM nps_users u
+    INNER JOIN nps_orders o ON u.user_id = o.buyer_id
+    INNER JOIN nps_order_items oi ON o.order_id = oi.order_id
+    INNER JOIN nps_products p ON oi.product_id = p.product_id
+    INNER JOIN nps_roles r ON u.role_id = r.role_id
+    WHERE u.user_id = ?
+      AND p.seller_id = ?
+      AND r.role_name = 'Buyer'
+    GROUP BY u.user_id, u.full_name, u.email, u.phone_number, u.address, u.status
+    LIMIT 1
+";
+$customerStmt = mysqli_prepare($conn, $customerSql);
+mysqli_stmt_bind_param($customerStmt, "ii", $customerId, $sellerId);
+mysqli_stmt_execute($customerStmt);
+$customerResult = mysqli_stmt_get_result($customerStmt);
+$customer = mysqli_fetch_assoc($customerResult);
+mysqli_stmt_close($customerStmt);
+
+if (!$customer) {
+    header('Location: customer_data.php');
+    exit;
+}
+
+/* =========================
+   LOAD CUSTOMER ORDERS
+========================= */
+$orders = [];
+$ordersSql = "
+    SELECT
+        o.order_id,
+        o.order_date,
+        o.order_status,
+        SUM(oi.subtotal) AS seller_total
+    FROM nps_orders o
+    INNER JOIN nps_order_items oi ON o.order_id = oi.order_id
+    INNER JOIN nps_products p ON oi.product_id = p.product_id
+    WHERE o.buyer_id = ? AND p.seller_id = ?
+    GROUP BY o.order_id, o.order_date, o.order_status
+    ORDER BY o.order_date DESC, o.order_id DESC
+";
+$ordersStmt = mysqli_prepare($conn, $ordersSql);
+mysqli_stmt_bind_param($ordersStmt, "ii", $customerId, $sellerId);
+mysqli_stmt_execute($ordersStmt);
+$ordersResult = mysqli_stmt_get_result($ordersStmt);
+while ($row = mysqli_fetch_assoc($ordersResult)) {
+    $orders[] = $row;
+}
+mysqli_stmt_close($ordersStmt);
+
+function statusBadgeClass($status)
+{
+    switch (strtolower($status)) {
+        case 'active':    return 'status-badge active';
+        case 'inactive':  return 'status-badge inactive';
+        case 'blocked':   return 'status-badge blocked';
+        case 'pending':   return 'status-badge pending';
+        case 'confirmed': return 'status-badge confirmed';
+        case 'shipped':   return 'status-badge shipped';
+        case 'delivered': return 'status-badge delivered';
+        case 'cancelled': return 'status-badge cancelled';
+        default:          return 'status-badge';
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Details - NextPick</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
+
+        body { background: #f4f4f6; color: #222; }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ── PAGE WRAPPER ── */
+        .page-wrapper {
+            max-width: calc(100% - 50px);
+            margin: 25px auto;
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            padding: 18px 28px;
+            border-bottom: 1px solid #ececec;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar img {
+            height: 34px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+        .seller-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #e8e8ff;
+            color: #3158ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .topbar-user { display: flex; flex-direction: column; gap: 2px; }
+        .topbar-user strong { font-size: 14px; }
+        .topbar-user span   { font-size: 12px; color: #666; }
+
+        /* ── LAYOUT ── */
+        .main-layout {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 255px;
+            border-right: 1px solid #ececec;
+            padding: 28px 18px;
+            background: #fff;
+            flex-shrink: 0;
+            align-self: stretch;
+        }
+
+        .sidebar h2 {
+            font-size: 28px;
+            line-height: 1.15;
+            margin-bottom: 28px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 48px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            color: #111827;
+            font-size: 15px;
+            font-weight: 500;
+            transition: 0.2s ease;
+        }
+
+        .menu a:hover  { background: #f4f6ff; color: #3158ff; }
+        .menu a.active { background: #eef2ff; color: #3158ff; font-weight: 600; }
+
+        .menu-icon-img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        /* ── CONTENT ── */
+        .content {
+            flex: 1;
+            padding: 28px;
+            background: #fcfcfc;
+            min-width: 0;
+            align-self: stretch;
+        }
+
+        .page-title-box {
+            padding: 0 0 18px 0;
+            margin-bottom: 6px;
+        }
+
+        .page-title-box h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-bottom: 18px;
+            font-size: 22px;
+            color: #1f2937;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* ── INFO GRID ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .info-box {
+            background: #fafafa;
+            border: 1px solid #ececec;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .info-box .label { font-size: 13px; color: #666; margin-bottom: 6px; }
+        .info-box .value { font-size: 15px; color: #222; font-weight: 600; }
+
+        /* ── STATUS BADGES ── */
+        .status-badge {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .active    { background: #d9f7be; color: #237804; }
+        .inactive  { background: #fff1b8; color: #ad6800; }
+        .blocked   { background: #ffd6d6; color: #c62828; }
+        .pending   { background: #f7d73c; color: #111; }
+        .confirmed { background: #dbeafe; color: #1d4ed8; }
+        .shipped   { background: #ff7a00; color: #fff; }
+        .delivered { background: #4ac84a; color: #fff; }
+        .cancelled { background: #f8d7da; color: #b42318; }
+
+        /* ── TABLE ── */
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        th {
+            text-align: left;
+            background: #f3f3f3;
+            color: #222;
+            padding: 14px 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 14px 10px;
+            border-top: 1px solid #ededed;
+            font-size: 15px;
+            color: #444;
+        }
+
+        .empty-state {
+            padding: 28px 10px;
+            color: #777;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        /* ── BUTTONS ── */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary   { background: #3158ff; color: #fff; }
+        .btn-secondary { background: #fff; color: #36567f; border: 1px solid #8aa0c1; }
+
+        /* ── FOOTER ── */
+        .footer {
+            border-top: 1px solid #ececec;
+            background: #fff;
+            margin-top: auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            padding: 28px;
+        }
+
+        .footer h4 { font-size: 14px; margin-bottom: 12px; }
+
+        .footer p,
+        .footer a,
+        .footer li { font-size: 13px; color: #666; line-height: 1.8; }
+
+        .footer ul { list-style: none; }
+
+        .footer-bottom {
+            border-top: 1px solid #f0f0f0;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .footer-links { display: flex; gap: 18px; flex-wrap: wrap; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1200px) {
+            .footer-top { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 950px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ececec; }
+        }
+
+        @media (max-width: 700px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .actions { flex-direction: column; }
+            .footer-top { grid-template-columns: 1fr; }
+            .topbar, .content, .sidebar,
+            .footer-top, .footer-bottom { padding-left: 16px; padding-right: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <img src="/NextPickStore/assets/images/Logos/nextpickstore-logo.png" alt="NextPick Logo">
+        <div class="topbar-right">
+            <div class="seller-badge"><?php echo strtoupper(substr($sellerName, 0, 1)); ?></div>
+            <div class="topbar-user">
+                <strong><?php echo htmlspecialchars($sellerName); ?></strong>
+                <span>Seller</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <h2>Welcome,<br><?php echo htmlspecialchars($firstName); ?></h2>
+
+            <ul class="menu">
+                <li><a href="dashboard.php"><img src="../../assets/images/icons/seller icon/dashboard.png" alt="" class="menu-icon-img"><span>Dashboard</span></a></li>
+                <li><a href="my_products.php"><img src="../../assets/images/icons/seller icon/inventory-management.png" alt="" class="menu-icon-img"><span>Inventory Management</span></a></li>
+                <li><a href="add_product.php"><img src="../../assets/images/icons/seller icon/add-to-cart.png" alt="" class="menu-icon-img"><span>Add Product</span></a></li>
+                <li><a href="orders.php"><img src="../../assets/images/icons/seller icon/manifest.png" alt="" class="menu-icon-img"><span>Orders</span></a></li>
+                <li><a href="customer_data.php" class="active"><img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
+                <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
+                <li><a href="settings.php"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
+                <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
+                <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
+            </ul>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="content">
+            <div class="page-title-box">
+                <h1>Customer Details</h1>
+            </div>
+
+            <div class="card">
+                <h2><?php echo htmlspecialchars($customer['full_name']); ?></h2>
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <div class="label">Email</div>
+                        <div class="value"><?php echo htmlspecialchars($customer['email']); ?></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="label">Phone</div>
+                        <div class="value"><?php echo !empty($customer['phone_number']) ? htmlspecialchars($customer['phone_number']) : '-'; ?></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="label">Address</div>
+                        <div class="value"><?php echo !empty($customer['address']) ? htmlspecialchars($customer['address']) : '-'; ?></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="label">Account Status</div>
+                        <div class="value">
+                            <span class="<?php echo statusBadgeClass($customer['status']); ?>">
+                                <?php echo htmlspecialchars(ucfirst($customer['status'])); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <div class="label">Total Orders From Your Store</div>
+                        <div class="value"><?php echo (int)$customer['total_orders']; ?></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="label">Last Purchased Date</div>
+                        <div class="value"><?php echo !empty($customer['last_order_date']) ? date('Y/m/d', strtotime($customer['last_order_date'])) : '-'; ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Customer Orders</h2>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Order Date</th>
+                                <th>Status</th>
+                                <th>Seller Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($orders)) { ?>
+                                <?php foreach ($orders as $order) { ?>
+                                    <tr>
+                                        <td>#<?php echo (int)$order['order_id']; ?></td>
+                                        <td><?php echo date('Y/m/d', strtotime($order['order_date'])); ?></td>
+                                        <td>
+                                            <span class="<?php echo statusBadgeClass($order['order_status']); ?>">
+                                                <?php echo htmlspecialchars($order['order_status']); ?>
+                                            </span>
+                                        </td>
+                                        <td>$<?php echo number_format((float)$order['seller_total'], 2); ?></td>
+                                        <td>
+                                            <a href="order_details.php?order_id=<?php echo (int)$order['order_id']; ?>" class="btn btn-secondary">View Order</a>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                            <?php } else { ?>
+                                <tr>
+                                    <td colspan="5" class="empty-state">No orders found for this customer.</td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="actions">
+                    <a href="edit_customer.php?id=<?php echo (int)$customer['user_id']; ?>" class="btn btn-primary">Edit Customer</a>
+                    <a href="customer_data.php" class="btn btn-secondary">Back</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div>
+                <h4>E-commerce support</h4>
+                <p>NEXTPICK</p>
+                <p>Manama, Bahrain</p>
+                <p>Phone: +973 123 4567</p>
+                <p>Email: support@nextpick.com</p>
+            </div>
+            <div>
+                <h4>Working hours</h4>
+                <p>Monday to Friday: 09:00 - 18:00</p>
+                <p>Saturday: 10:00 - 16:00</p>
+                <p>Sunday: Closed</p>
+            </div>
+            <div>
+                <h4>About us</h4>
+                <ul>
+                    <li><a href="#">Stores</a></li>
+                    <li><a href="#">Corporate website</a></li>
+                    <li><a href="#">Exclusive Offers</a></li>
+                    <li><a href="#">Career</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Help & Support</h4>
+                <ul>
+                    <li><a href="#">Help center</a></li>
+                    <li><a href="#">Payments</a></li>
+                    <li><a href="#">Product returns</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>© 2024 NEXTPICK. All Rights Reserved.</div>
+            <div class="footer-links">
+                <a href="#">Privacy policy</a>
+                <a href="#">Cookie settings</a>
+                <a href="#">Terms and conditions</a>
+                <a href="#">Imprint</a>
+            </div>
+        </div>
+    </footer>
+
+</div>
+</body>
+</html>
