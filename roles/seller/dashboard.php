@@ -185,14 +185,15 @@ foreach ($topProducts as $item) {
             color: inherit;
         }
 
-        .page-wrapper {
-            max-width: calc(100% - 50px);
-            margin: 25px auto;
-            background: #fff;
-            border: 1px solid #e8e8e8;
-            min-height: 90vh;
-        }
-
+      .page-wrapper {
+    max-width: calc(100% - 50px);
+    margin: 25px auto;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
         .topbar {
             padding: 18px 28px;
             border-bottom: 1px solid #ececec;
@@ -243,9 +244,9 @@ foreach ($topProducts as $item) {
         }
 
         .main-layout {
-            display: flex;
-            min-height: 700px;
-        }
+    display: flex;
+    flex: 1;
+}
 
         .sidebar {
             width: 255px;
@@ -302,12 +303,13 @@ foreach ($topProducts as $item) {
             flex-shrink: 0;
         }
 
-        .content {
-            flex: 1;
-            padding: 28px;
-            background: #fcfcfc;
-            min-width: 0;
-        }
+       .content {
+    flex: 1;
+    padding: 28px;
+    background: #fcfcfc;
+    min-width: 0;
+    align-self: stretch;
+}
 
         .content-header {
             display: flex;
@@ -536,11 +538,11 @@ foreach ($topProducts as $item) {
             padding: 12px 8px;
         }
 
-        .footer {
-            border-top: 1px solid #ececec;
-            background: #fff;
-            margin-top: 24px;
-        }
+       .footer {
+    border-top: 1px solid #ececec;
+    background: #fff;
+    margin-top: 0;
+}
 
         .footer-top {
     display: grid;
@@ -596,35 +598,22 @@ foreach ($topProducts as $item) {
         }
 
         @media (max-width: 900px) {
-            .main-layout {
-                flex-direction: column;
-            }
+    .main-layout {
+        flex-direction: column;
+    }
 
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #ececec;
-            }
-        }
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #ececec;
+    }
+}
 
-        @media (max-width: 640px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .content-header h1 {
-                font-size: 24px;
-            }
-
-            .topbar,
-            .content,
-            .footer-top,
-            .footer-bottom,
-            .sidebar {
-                padding-left: 16px;
-                padding-right: 16px;
-            }
-        }
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
     </style>
 </head>
 <body>
@@ -650,12 +639,11 @@ foreach ($topProducts as $item) {
                 <li><a href="dashboard.php" class="active"><img src="../../assets/images/icons/seller icon/dashboard.png" alt="" class="menu-icon-img"><span>Dashboard</span></a></li>
                 <li><a href="my_products.php"><img src="../../assets/images/icons/seller icon/inventory-management.png" alt="" class="menu-icon-img"><span>Inventory Management</span></a></li>
                 <li><a href="add_product.php"><img src="../../assets/images/icons/seller icon/add-to-cart.png" alt="" class="menu-icon-img"><span>Add Product</span></a></li>
-                <li><a href="../buyer/my_orders.php"><img src="../../assets/images/icons/seller icon/manifest.png" alt="" class="menu-icon-img"><span>Orders</span></a></li>
-                <li><a href="#"><img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
-                <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
-                <li><a href="#"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
-                <li><a href="#"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
-                <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
+<li><a href="orders.php"><img src="../../assets/images/icons/seller icon/manifest.png" alt="" class="menu-icon-img"><span>Orders</span></a></li>
+<li><a href="customer_data.php"><img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
+<li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
+<li><a href="settings.php"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
+<li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>                <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
             </ul>
         </aside>
 
