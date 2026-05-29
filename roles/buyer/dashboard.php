@@ -1,23 +1,29 @@
 <?php
 include_once '../../includes/auth_guard.php';
 include_once '../../includes/config.php'; 
+include 'search.php';
+
 requireRole(['Buyer']);
 
 $conn = getConnection();
-$query = "SELECT p.product_id, p.product_Name , p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
+
+
+
+$query = "SELECT p.product_id, p.product_Name, p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
     FROM nps_products p
     Left Join nps_Ratings r on p.product_id = r.product_id
     Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 
     WHERE publish_status = 'published'
     GROUP By p.product_id
-    ORDER BY P.created_at DESC LIMIT 4";
+    ORDER BY P.created_at DESC LIMIT 6";
  $new = mysqli_query($conn, $query);
-$sql = "SELECT p.product_id, p.product_Name , p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
+$sql = "SELECT p.product_id, p.product_Name, p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
     FROM nps_products p
     Left Join nps_Ratings r on p.product_id = r.product_id
     Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 WHERE 1=1
-    GROUP By p.product_id";
-$result = mysqli_query($conn, $sql);
+    GROUP By p.product_id 
+        ORDER By p.product_id DESC Limit 6";
+$resultss = mysqli_query($conn, $sql);
 $sqlquery = "SELECT c.category_id, c.category_name, MIN(pi.image_path) as img FROM nps_categories c
     LEFT JOIN nps_products p
    ON c.category_id =  p.category_id 
@@ -31,6 +37,14 @@ $categoryResult = mysqli_query($conn, $sqlquery);
         $categoriess[] = $rows;
     } 
     }
+    $q = "SELECT p.product_id, p.product_Name , p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path, sum(o.quantity) AS total 
+    FROM nps_products  p
+    Left Join nps_Ratings r on p.product_id = r.product_id
+    Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 
+  INNER JOIN nps_order_items o on p.product_id = o.product_id
+  GROUP BY p.product_id
+  ORDER BY total DESC LIMIT 6";
+ $bestSeller = mysqli_query($conn, $q);
 ?>
 <!DOCTYPE html language="en">
      <meta charset="UTF-8">
@@ -39,395 +53,324 @@ $categoryResult = mysqli_query($conn, $sqlquery);
   <title>Home</title>
 
   <style>
-    :root{
-      --PrimaryBlue :#1A4DE1;
+       :root {
+        --PrimaryBlue: #1A4DE1;
+        --TopBarHeight: 72px;
+        --TopBarShadow: 0 4px 18px rgba(26, 77, 225, 0.08);
+        --TopBarRadius: 16px;
     }
     * {
-     box-sizing: border-box;
+        box-sizing: border-box;
         margin: 0;
-         padding: 0;
-
+        padding: 0;
     }
-
     body {
-      font-family: Arial, sans-serif;
-      background: #e9e9e9;
-
+        font-family: Arial, sans-serif;
+        background: #e9e9e9;
     }
     a {
-                text-decoration: none;
-                color: inherit;
-            }
-    .banner {
-      width: 100%;
-      padding: 0;
+        text-decoration: none;
+        color: inherit;
     }
-
-    .slider {
-      width: 100%;
-      height: 756px;
-      overflow: hidden;
-      position: relative;
-      cursor: grab;
-      user-select: none;
-    }
-
-    .slider:active {
-      cursor: grabbing;
-    }
-
-    .slides {
-      display: flex;
-      height: 100%;
-      transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-
-    .slide {
-      min-width: 100%;
-      height: 100%;
-      position: relative;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .slide img {
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      object-fit: cover;
-      user-select: none;
-      -webkit-user-drag: none;
-      transform: scale(1.08);
-      opacity: 0.75;
-      transition: transform 0.8s ease, opacity 0.8s ease;
-    }
-
-    .slide.active img {
-      transform: scale(1);
-      opacity: 1;
-    }
-
-    .overlay {
+    /* --- Improved Top Bar --- */
+    .topBar {
     position: absolute;
-    top:50%;
-     font-family: "Roboto";
-      width: 100%;
-      height: 211px;
-      Gap: 32px;
-      transform: translateY(-50%) translateX(-30px);
-      color: #424242;
-      opacity: 0;
-      transition: all 0.6s ease;
+    top:2%;
+    left:4%;
+    width: 92%;
+    z-index: 99999;
     }
-     .content{
-     position: absolute;
-     left:4%;
-     width: 350px;
-     }
-    .content2{
-     position: absolute;
-     right: 4%;
-     width:350px;
+  
+    
+       
+      
+     
+    /* General Styles */
+    .banner {
+        position: absolute;
+        top:0%;
+        width: 100%;
+        padding: 0;
+        z-index:30; 
+    }
+    .slider {
+        width: 100%;
+        height: 756px;
+        overflow: hidden;
+        position: relative;
+        cursor: grab;
+        user-select: none;
+    }
+    .slider:active {
+        cursor: grabbing;
+    }
+    .slides {
+        display: flex;
+        height: 100%;
+        transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .slide {
+        min-width: 100%;
+        height: 100%;
+        position: relative;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+    .slide img {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        object-fit: cover;
+        user-select: none;
+        -webkit-user-drag: none;
+        transform: scale(1.08);
+        opacity: 0.75;
+        transition: transform 0.8s ease, opacity 0.8s ease;
+    }
+    .slide.active img {
+        transform: scale(1);
+        opacity: 1;
+    }
+    .overlay {
+        position: absolute;
+        top: 50%;
+        font-family: "Roboto";
+        width: 100%;
+        height: 211px;
+        gap: 32px;
+        transform: translateY(-50%) translateX(-30px);
+        color: #424242;
+        opacity: 0;
+        transition: all 0.6s ease;
+    }
+    .content {
+        position: absolute;
+        left: 4%;
+        width: 350px;
+    }
+    .content2 {
+        position: absolute;
+        right: 4%;
+        width: 350px;
     }
     .slide.active .overlay {
-      opacity: 1;
-      transform: translateY(-50%) translateX(0);
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
     }
-
     .overlay h1 {
-      font-size: 44px;
-      margin-bottom: 10px;
+        font-size: 44px;
+        margin-bottom: 10px;
     }
-
     .overlay p {
-      font-size: 20px;
-      width: 100%;
-      line-height: 1.5;
+        font-size: 20px;
+        width: 100%;
+        line-height: 1.5;
     }
     
-     .page-wrapper {
-                margin: 25px auto;
-                background: #f6f6f6;
-                border-radius: 14px;
-                padding: 25px 30px 0;
-                min-height: calc(100vh - 50px);
-                margin-left: 25px;
-                margin-right: 25px;
-            }
-    
-
-    .dots {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: white;
-      transition: 0.3s;
-    }
-
-    .dot.active {
-      background: black;
-      transform: scale(1.2);
-    }
-
-    @media (max-width: 768px) {
-      .slider {
-        height: 300px;
-      }
-
-      .overlay h1 {
-        font-size: 24px;
-        color: #424242;
-      }
-
-      .overlay p {
-        font-size: 14px;
-      }
-    }
-     .top-bar {
-      height: 64px;
-      background: white;
-      border-radius: 8px;
-      margin: 40px auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      box-sizing: border-box;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-     position : absolute;
-     top : 0.5%;
-     left: 4%;
-     right: 4%;
-    }
-    .dropdown-btn{
+    .btn-Discover1{
+        background-color: var(--PrimaryBlue);
+        color: white;
         border: none;
+        border-radius: 8px;
+        width: 200px;
+        height: 48px;
+        font-weight: bold;
+        font-size: 18px;
+        margin-top: 10%;
         cursor: pointer;
-    }
-   
-    .dropdawn {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .product-menu {
-       position: absolute;
-         top: 100%;
-         left:0%;
-         transform:translateY(10px);
-       background: white;
-       color: #444;
-       font-size: 14px;
-       padding: 10px 0;
-        list-style: none;
-        visibility: hidden;
-        transition: 0.3s ease;
-       z-index: 1000;
-
         
     }
-   
-   .dropdawn:hover .product-menu{
-    opacity: 1;
-       visibility: visible;
-    transform: translateY(0);
-   } 
-  
-    .search-box {
-      width: 300px;
-      height: 32px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 0 10px;
-      outline: none;
+    .page-wrapper {
+        margin: 25px auto;
+        background: #f6f6f6;
+        border-radius: 14px;
+        padding: 25px 30px 0;
+        min-height: calc(100vh - 50px);
+        margin-left: 25px;
+        margin-right: 25px;
+        margin-top: 52%;
+        z-index: 9;
     }
-
-    .icons {
-      display: flex;
-      gap: 15px;
-      font-size: 8px;
-      color: black;
+    .dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
     }
-    .icons img{
-        width: 10px;
-        height:10px;
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: white;
+        transition: 0.3s;
     }
-    .btn-Discover1 {
-      background-color: var(--PrimaryBlue);
-        display: inline-block;
-      height: 48px;
-      width : 180px;
-        color: white;
-      text-decoration: none;
-      font-size: 20px;
-      font-weight: bold;
-      border-radius: 8px;
-      box-shadow: 0 8px 20px rgba(47, 91, 255, 0.35);
-      margin-top:  100px;
-      border: none;
-      cursor: pointer;
-
+    .dot.active {
+        background: black;
+        transform: scale(1.2);
     }
-    
-    .btn-Discover1:hover{
-     background: linear-gradient(135deg, #fff8ee, #f3ede2);
-     color:black;
-     transform: translateY(-3px);
-     box-shadow: 0 10px 25px rgba(200, 255,255,0.22);
+    @media (max-width: 768px) {
+        .slider {
+            height: 300px;
+        }
+        .overlay h1 {
+            font-size: 24px;
+            color: #424242;
+        }
+        .overlay p {
+            font-size: 14px;
+        }
     }
-    
     /* Category */
     .category-row {
-        display: flex;    
+        display: flex;
         gap: 24px;
+       padding: 20px;
+
     }
-    .category-card{
-        
+    .category-card {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 12px;
     }
-    .image-wrapper{
-         width: 184px;
+    .image-wrapper {
+        width: 184px;
         height: 122px;
         border-radius: 8px;
         overflow: hidden;
-    }  
-    .category_images{
+    }
+    .category_images {
         width: 100%;
         height: 100%;
     }
     /* Footer*/
-     .footer {
-                margin-top: 35px;
-                border-top: 1px solid #ddd;
-                padding: 28px 0 18px;
-            }
-
-            .footer-top {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-                gap: 25px;
-                margin-bottom: 22px;
-                font-size: 14px;
-                color: #666;
-            }
-
-            .footer-top h4 {
-                color: #222;
-                margin-bottom: 10px;
-                font-size: 15px;
-            }
-     .footer-bottom {
-                border-top: 1px solid #ddd;
-                padding-top: 16px;
-                font-size: 13px;
-                color: #666;
-                display: flex;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-          /* Wrapper (section around everything) */
-.product-wrapper {
-  position: relative;
-  
-}
-
-/* Row */
-.product-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  gap: 20px;
-  padding: 20px;
-}
-
-/* Hide scrollbar (optional) */
-.product-row::-webkit-scrollbar {
-  height: 8px;
-}
-
-/* Product Card */
-.product-card {
-  min-width: 230px; /* important for horizontal scroll */
-  max-width: 230px;
-  height: 300px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0; /* prevents shrinking */
-  transition: 0.3s;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-}
-
-/* Product Image */
-.product_images {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* Product Name */
-.product-name {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 10px 0 5px;
-}
-
-/* Description */
-.product-description {
-  font-size: 13px;
-  color: #777;
-  height: 35px;
-  overflow: hidden;
-}
-
-.product-info {
-    display: flex;
-    justify-content:  space-between;
-    align-items: center;
-    margin-top: auto;
-}
-/* Price */
-.product-price {
-  font-weight: bold;
-  color: #27ae60;
-  margin: 8px 0;
-}
-
-/* Rating */
-.rating {
-  color: #f1c40f;
-  font-size: 14px;
+    .footer {
+        margin-top: 35px;
+        border-top: 1px solid #ddd;
+        padding: 28px 0 18px;
+    }
+    .footer-top {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        margin-bottom: 22px;
+        font-size: 14px;
+        color: #666;
+    }
+    .secHeader{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .footer-top h4 {
+        color: #222;
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+    .footer-bottom {
+        border-top: 1px solid #ddd;
+        padding-top: 16px;
+        font-size: 13px;
+        color: #666;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
    
-}
-
-
-.scroll-btn:hover {
-  background: #eee;
-}
+    /* Wrapper (section around everything) */
+    .product-wrapper {
+        position: relative;
+    }
+    /* Row */
+    .product-row {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        padding: 20px;
+        max-width: 100%;
+    }
+    /* Hide scrollbar (optional) */
+    .product-row::-webkit-scrollbar {
+        height: 8px;
+    }
+    .product-result {
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        margin-top:10%;
+        height:600px;
+        width: 92%;
+         z-index: 1;
+    }
+    /* Product Card */
+    .product-card {
+        min-width: 200px; 
+        max-width: 230px;
+        height: 300px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0; /* prevents shrinking */
+        transition: 0.3s;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+    /* Product Image */
+    .product_images {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    /* Product Name */
+    .product-name {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 10px 0 5px;
+    }
+    /* Description */
+    .product-description {
+        font-size: 13px;
+        color: #777;
+        height: 35px;
+        overflow: hidden;
+    }
+    .product-info {
+        display: flex;
+        justify-content:  space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+    /* Price */
+    .product-price {
+        font-weight: bold;
+        color: #27ae60;
+        margin: 8px 0;
+    }
+    /* Rating */
+    .rating {
+        color: #f1c40f;
+        font-size: 14px;
+    }
+    
   </style>
 </head>
 <body>
+    
+      <div class="topBar">
+        <?php include '../../includes/buyer_topBar.php'; ?>
+        </div>
+   
+      <?php
+        if(!$isSearching): ?>
 
   <section class="banner">
     <div class="slider" id="slider">
@@ -439,7 +382,7 @@ $categoryResult = mysqli_query($conn, $sqlquery);
               <div class="content">
             <h1>Introducing the Next Generation of Sound</h1>
             <p>Experience pure,Immersive sound never before    </p>
-             <button class="btn-Discover1" >Discover More</button>
+      <a href="productCategory.php?id=6"> <button class="btn-Discover1" > Discover More</button></a>
               </div>
           </div>
         </div>
@@ -450,40 +393,24 @@ $categoryResult = mysqli_query($conn, $sqlquery);
               <div class="content2">
                   <h1>Your Ultimate Destination for Next-Gen Tech</h1>
              <p>Explore a premium collection of smartphones,laptops and professional gear curated for your lifestyle</p>
-           <button class="btn-Discover1" >Discover More</button>
+             <div class="btn2"><a href="ViewAllProducts.php?type=allproducts"><button class="btn-Discover1" >Discover More</button></a></div>
               </div>
           </div>
         </div>
       </div>
-       <div class="top-bar">
-    <div class="logo"><img src="../../assets/images/Logos/nextpickstore-logo.png" alt="Logo"/></div>
-    <div class="dropdawn">
-    <button class="dropdown-btn"> All Products</button>
-    <ul class="product-menu"> 
-        
-          <?php 
-          foreach ($categoriess as $cat):
-    ?>
-        <li> <a href="productCategory.php?id=<?php echo $cat['category_id'];?>"><?php echo $cat['category_name'];?> </a></li>
-        <?php    endforeach; ?>
-    </ul>
-    </div>
-    <input type="text" class="search-box" placeholder="Iam Searching for..." />
-    
-    <div class="icons">
-        <span></span>
-      <span></span>
-      <span><a href="/NextPickStore/auth/logout.php" class="logout-btn">Logout</a>
-</span>
-    </div>
-  </div>
-
+      
       <div class="dots" id="dots"></div>
     </div>
   </section>
+            
+        
     <div class="page-wrapper">
         <section>
-            <h2>Latest Arrived</h2>
+              <div class="secHeader"> 
+                  <span><h3>Latest Arrived</h3></span>
+                <span> <p><a href="ViewAllProducts.php?type=latest">View All</a></p></span>
+
+            </div>
       <div class="product-row" id="productRow">
 
       
@@ -506,6 +433,7 @@ $categoryResult = mysqli_query($conn, $sqlquery);
            </div>
                <?php
           }
+           
        }else{
            echo '<p>No</p>';
        }
@@ -518,7 +446,12 @@ $categoryResult = mysqli_query($conn, $sqlquery);
       </section>
         
      <section  class="Producta">
-        <h3>Products</h3>
+          <div class="secHeader"> 
+                  <span><h3>Our Products</h3>
+</span>
+                <span> <p><a href="ViewAllProducts.php?type=allproducts">View All</a></p></span>
+
+            </div>
   
      <div class="product-wrapper">
       <div class="product-row" id="productRow">
@@ -526,8 +459,8 @@ $categoryResult = mysqli_query($conn, $sqlquery);
       
    <?php
                  
-       if($result){
-           while ($row = mysqli_fetch_assoc($result)){
+       if($resultss){
+           while ($row = mysqli_fetch_assoc($resultss)){
      ?>
           <a href="productDetails.php?id=<?php echo  $row['product_id'];?>">
 
@@ -555,11 +488,12 @@ $categoryResult = mysqli_query($conn, $sqlquery);
       </section>
     <section class="category">
         <h3>Shop by Category</h3>
+
         <div class="category-row">
        <?php
               foreach($categoriess as $cat):
               ?>
-            <a href="productCategory.php?id=<?php echo  $cat['category_id'];?>">
+            <a href="productCategory.php?id=<?php echo  $cat['category_id'];?>&name=<?php echo  $cat['category_name'];?>">
             <div class="category-card">
                 <div class="image-wrapper">
             <img class="category_images" src="../../<?php echo $cat["img"];?> "alt="product image"> 
@@ -573,8 +507,47 @@ $categoryResult = mysqli_query($conn, $sqlquery);
         <?php       endforeach;   ?>
         </div>
                  
-
+        
     </section>
+        <section> 
+            <div class="secHeader"> 
+                <span> <h3>Best Seller</h3></span>
+                <span> <p><a href="ViewAllProducts.php?type=bestSeller">View All</a></p></span>
+
+            </div>
+             <div class="product-wrapper">
+      <div class="product-row" id="productRow">
+
+      
+   <?php
+                 
+       if($bestSeller){
+           while ($r = mysqli_fetch_assoc($bestSeller)){
+     ?>
+          <a href="productDetails.php?id=<?php echo  $r['product_id'];?>">
+
+            <div class="product-card">
+                <img class="product_images" src="../../<?php echo $r["image_path"];?> "alt="product image">
+          <h3 class="product-name"><?php echo $r['product_Name'];?></h3>
+            <p class="product-description"><?php echo $r['short_description'];?></p>
+     
+   <div class="product-info">
+          <span class="price"><?php  echo $r['price'];?> </span>
+           <span class="rating">⭐<?php echo $r['Rating'];?></span>
+           </div>
+           </div>
+               <?php
+          }
+       }else{
+           echo '<p>No</p>';
+       }
+       ?>
+             
+</div>
+     
+</a>
+      </div>
+        </section>
     
      <footer class="footer">
                 <div class="footer-top">
@@ -602,6 +575,7 @@ $categoryResult = mysqli_query($conn, $sqlquery);
                         <div>Facebook | Instagram | Twitter</div>
                     </div>
                 </div>
+         
 
                 <div class="footer-bottom">
                     <div>© 2026 NEXTPICK. All Rights Reserved.</div>
@@ -609,6 +583,8 @@ $categoryResult = mysqli_query($conn, $sqlquery);
                 </div>
             </footer>
     </div>
+            <?php endif; ?>
+
   <script>
     const slider = document.getElementById("slider");
     const slidesContainer = document.getElementById("slides");
@@ -720,22 +696,7 @@ $categoryResult = mysqli_query($conn, $sqlquery);
     goToSlide(0);
      
 //
-    function scrollProducts(amount) {
-
-      const row = document.getElementById("productRow");
-
-      row.scrollBy({
-
-        left: amount,
-
-        behavior: "smooth"
-
-      });
-
-    }
-
   </script>
-
 
 </body>
 </html>

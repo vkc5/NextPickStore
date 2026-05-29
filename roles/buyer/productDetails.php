@@ -6,20 +6,33 @@ requireRole(['Buyer']);
 
 $conn = getConnection();
 $id =  isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$query = "SELECT p.product_id, p.product_Name , p.short_description,p.full_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
+$query = "SELECT p.product_id, p.product_Name ,p.brand , p.short_description,p.full_description, p.price, Round(AVG(r.rating_value),2) As Rating,
+    pi.image_path,u.full_name AS seller_name
     FROM nps_products p
+     INNER JOIN nps_users u ON p.seller_id = u.user_id
     Left Join nps_Ratings r on p.product_id = r.product_id
     Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 WHERE p.product_id = $id
     GROUP By p.product_id";
 $result = mysqli_query($conn, $query);
 $product = mysqli_fetch_assoc($result);
-?>
+$q = "SELECT
+         p.product_id,
+         c.comment_text,
+         c.created_at,
+         u.full_name,
+         COUNT(c.comment_id) AS total_comments 
+         FROM nps_products p INNER JOIN nps_comments c on p.product_id = c.product_id 
+         INNER JOIN nps_users u on c.user_id = u.user_id WHERE p.product_id = $id
+         GROUP BY p.product_id 
+         ORDER BY c.created_at DESC";
+$comments = mysqli_query($conn, $q);
+        ?>
 
 <!DOCTYPE html language="en">
      <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <head>
-    <head>
+    
         <title>Product Details</title>
         
         <style>
@@ -67,12 +80,261 @@ $product = mysqli_fetch_assoc($result);
                 flex-wrap: wrap;
                 gap: 12px;
             }
+             .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .product-image-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 18px;
+            padding: 25px;
+        }
+
+        .product-image-box img {
+            width: 100%;
+            max-height: 450px;
+            object-fit: contain;
+        }
+
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .brand,
+        .seller {
+            font-size: 15px;
+            color: #555;
+        }
+
+        .brand span,
+        .seller span {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .product-title {
+            font-size: 34px;
+            line-height: 1.2;
+        }
+
+        .short-desc {
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .rating {
+            color: #f59e0b;
+            font-size: 18px;
+        }
+
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .quantity {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quantity input {
+            width: 120px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .add-cart {
+            background: #2563eb;
+            color: white;
+        }
+
+        .buy-now {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .section {
+            margin-top: 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+        }
+
+        .section p {
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .review {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 900px) {
+            .product-card {
+                grid-template-columns: 1fr;
+            }
+
+            .product-title {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                margin: 15px auto;
+                padding: 12px;
+            }
+
+            .product-card,
+            .section {
+                padding: 18px;
+                border-radius: 15px;
+            }
+
+            .product-title {
+                font-size: 24px;
+            }
+
+            .price {
+                font-size: 26px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .quantity input {
+                width: 100%;
+            }
+        }
+    
+
             </style>
     </head>
     
     <body>
       
         <div class="page-wrapper">
+    
+       
+<div class="container">
+    <div class="product-card">
+
+        <div class="product-image-box">
+            <img src="../../<?php echo $product["image_path"];?>" alt="Product Image">
+        </div>
+
+        <div class="product-info">
+            <div class="brand">Brand: <span><?php echo $product['brand'];?></span></div>
+
+            <h1 class="product-title"><?php echo $product['product_Name'];?></h1>
+
+            <p class="short-desc">
+            <?php echo $product["short_description"];?>
+            </p>
+
+            <div class="rating">
+                <?php
+                $s =" ";
+                $stars = floor($product['Rating']);
+                for ($i = 0; $i < $stars; $i++)
+                {
+                    echo "★";
+                }
+                 echo " " .  $product["Rating"];?></div>
+
+            <div class="price">$<?php echo $product["price"];?></div>
+
+            <div class="seller">Sold by: <span><?php echo $product['seller_name'];?></span></div>
+
+            <div class="quantity">
+                <label>Quantity</label>
+                <input type="number" value="1" min="1">
+            </div>
+
+            <div class="buttons">
+                <button class="btn add-cart">Add To Cart</button>
+                <button class="btn buy-now">Buy Now</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h2>Description</h2>
+        <p>
+            <?php echo $product["full_description"];?>
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Customer Reviews</h2>
+         <?php if($comments){
+             while($ro = mysqli_fetch_assoc($comments)){
+             ?>
+        <div class="review">
+            <strong><?php echo $ro['u.full_name'];?></strong>
+            <div class="rating"></div>
+            <p></p>
+        </div>
+
+        <?php 
+             }
+         }else{
+             echo "NO Review";
+         }
+             ?>
+       
+    </div>
+
+</div>
+
          <footer class="footer">
                 <div class="footer-top">
                     <div>

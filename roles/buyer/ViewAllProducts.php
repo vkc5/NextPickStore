@@ -1,53 +1,66 @@
 <?php
 include_once '../../includes/auth_guard.php';
-include_once '../../includes/config.php';
-include_once '../../includes/session.php';
-include 'Search.php';
+include_once '../../includes/config.php'; 
+include 'search.php';
 requireRole(['Buyer']);
 
-$conn = getConnection();
-$id =  isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$name =  isset($_GET['name']) ? (string) $_GET['name'] : "";
+ $conn = getConnection();
+ 
+$type = isset($_GET['type']) ? (string) $_GET['type'] : 0;
 
-$query = "SELECT p.product_id, p.product_name , p.short_description, p.price,p.brand, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
+
+$query = "";
+  if($type  == "latest")
+  {
+      $query = "SELECT p.product_id, p.product_Name, p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
     FROM nps_products p
     Left Join nps_Ratings r on p.product_id = r.product_id
     Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 
-    WHERE p.category_id = $id
+    WHERE publish_status = 'published'
     GROUP By p.product_id
-    ORDER BY p.created_at DESC";        
-        
-$results = mysqli_query($conn, $query);
-$brandName = "SELECT product_id,brand
-    FROM nps_products 
-    WHERE category_id = $id
-    ORDER BY brand ";  
-$re = mysqli_query($conn, $brandName);
-
-  $brand = [];
-      if($re) {
-    while ($rows = mysqli_fetch_assoc($re)) {
-        $brand[] = $rows['brand'];
-    } 
+    ORDER BY P.created_at DESC LIMIT 10";
+  }
+    if($type  == "allproducts")
+    {
+        $query = "SELECT p.product_id, p.product_Name, p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path 
+    FROM nps_products p
+    Left Join nps_Ratings r on p.product_id = r.product_id
+    Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 WHERE 1=1
+    GROUP By p.product_id 
+        ORDER By p.created_at DESC";
     }
+  if($type  == "bestSeller")
+  {
+ $query = "SELECT p.product_id, p.product_Name , p.short_description, p.price, Round(AVG(r.rating_value),2) As Rating, pi.image_path, sum(o.quantity) AS total 
+    FROM nps_products  p
+    Left Join nps_Ratings r on p.product_id = r.product_id
+    Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 
+  INNER JOIN nps_order_items o on p.product_id = o.product_id
+  GROUP BY p.product_id
+  ORDER BY total DESC LIMIT 10";
+  }
+ 
+ $results = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html language="en">
      <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<head>
-    
-        <title>Categories</title>
+
+    <head>
+        <title>View All</title>
         
         <style>
             body {
                 background: #e9e9e9;
                 color: #222;
             }
-             a {
-                text-decoration: none;
-                color: inherit;
-            }
+              a {
+        text-decoration: none;
+        color: inherit;
+    }
+   
+           
             .page-wrapper {
                 margin: 25px;
                 background: #f6f6f6;
@@ -55,16 +68,24 @@ $re = mysqli_query($conn, $brandName);
                 padding: 25px 30px 0;
                 min-height: calc(100vh - 50px);
             }
-             .topBar{
-        margin-left: 4%; 
-        margin-right: 4%;
+             /* Wrapper (section around everything) */
+    .product-wrapper {
+        position: relative;
     }
-           /* Wrapper (section around everything) */
-.product-wrapper {
-  position: relative;
-  
-}
-.product-result {
+    /* Row */
+    .product-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow-x: auto;
+        gap: 20px;
+        padding: 20px;
+    }
+    /* Hide scrollbar (optional) */
+    .product-row::-webkit-scrollbar {
+        height: 8px;
+    }
+    .product-result {
         display: flex;
         position: absolute;
         top:20%;
@@ -72,87 +93,66 @@ $re = mysqli_query($conn, $brandName);
       width: 92%;
     z-index: 1000;
     }
-
-/* Row */
-.product-row {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  overflow-x: auto;
-  gap: 20px;
-  padding: 20px;
-}
-
-/* Hide scrollbar (optional) */
-.product-row::-webkit-scrollbar {
-  height: 8px;
-}
-
-/* Product Card */
-.product-card {
-  min-width: 230px; /* important for horizontal scroll */
-  max-width: 230px;
-  height: 300px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0; /* prevents shrinking */
-  transition: 0.3s;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-}
-
-/* Product Image */
-.product_images {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* Product Name */
-.product-name {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 10px 0 5px;
-}
-
-/* Description */
-.product-description {
-  font-size: 13px;
-  color: #777;
-  height: 35px;
-  overflow: hidden;
-}
-
-.product-info {
-    display: flex;
-    justify-content:  space-between;
-    align-items: center;
-    margin-top: auto;
-}
-/* Price */
-.product-price {
-  font-weight: bold;
-  color: #27ae60;
-  margin: 8px 0;
-}
-
-/* Rating */
-.rating {
-  color: #f1c40f;
-  font-size: 14px;
+    /* Product Card */
+    .product-card {
+        min-width: 200px; 
+        max-width: 230px;
+        height: 300px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0; /* prevents shrinking */
+        transition: 0.3s;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+    /* Product Image */
+    .product_images {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    /* Product Name */
+    .product-name {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 10px 0 5px;
+    }
+    /* Description */
+    .product-description {
+        font-size: 13px;
+        color: #777;
+        height: 35px;
+        overflow: hidden;
+    }
+    .product-info {
+        display: flex;
+        justify-content:  space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+    /* Price */
+    .product-price {
+        font-weight: bold;
+        color: #27ae60;
+        margin: 8px 0;
+    }
+    /* Rating */
+    .rating {
+        color: #f1c40f;
+        font-size: 14px;
+    }
+    .topBar{
+        margin-left: 4%; 
+        margin-right: 4%;
+    }
    
-}
-
-
-
-              /* Footer*/
+    /* Footer*/
      .footer {
                 margin-top: 35px;
                 border-top: 1px solid #ddd;
@@ -166,19 +166,6 @@ $re = mysqli_query($conn, $brandName);
                 margin-bottom: 22px;
                 font-size: 14px;
                 color: #666;
-            }
-            .brand-row {
-                display: flex;
-                flex-direction: row;
-                gap: 25px;
-                padding: 15px 0;
-                overflow-x: auto;
-            }
-            .brand-card{
-                min-width: 140px;
-                height: 70px;
-                justify-content: center;
-                border-redius:18px;
             }
 
             .footer-top h4 {
@@ -200,15 +187,15 @@ $re = mysqli_query($conn, $brandName);
     </head>
     
     <body>
-         <div class="topBar">
+        <div class="topBar">
         <?php include '../../includes/buyer_topBar.php'; ?>
         </div>
-       
         <div class="page-wrapper">
-     <?php    if(!$isSearching):  
-                 echo '<h2>Explore your' . $name .'</h2>'; ?>
+        <?php if(!$isSearching):?>
 
-        <div class="product-wrapper">
+            <div class="filters"> <?php    include '../../includes/buyer_searchSlider.php';?> </div>
+            <section>
+                 <div class="product-wrapper">
       <div class="product-row" id="productRow">
 
       
@@ -216,13 +203,12 @@ $re = mysqli_query($conn, $brandName);
                  
        if($results){
            while ($row = mysqli_fetch_assoc($results)){
-
      ?>
           <a href="productDetails.php?id=<?php echo  $row['product_id'];?>">
 
             <div class="product-card">
                 <img class="product_images" src="../../<?php echo $row["image_path"];?> "alt="product image">
-          <h3 class="product-name"><?php echo $row['product_name'];?></h3>
+          <h3 class="product-name"><?php echo $row['product_Name'];?></h3>
             <p class="product-description"><?php echo $row['short_description'];?></p>
      
    <div class="product-info">
@@ -238,24 +224,10 @@ $re = mysqli_query($conn, $brandName);
        ?>
              
 </div>
-</a> 
+     
+</a>
       </div>
-            
-            <section>
-                <div class="brand-row">
-                   
-                  <?php foreach($brand as $b):?>
-                    <div class="brand-card">
-                   
-                        <h2><?php echo $b;?></h2>
-                    </div>
-                    <?php             endforeach;  ?>          
-               
-           
-              
-                    </div>
-            </section>
-            
+      </section>
 
          <footer class="footer">
                 <div class="footer-top">
@@ -289,9 +261,8 @@ $re = mysqli_query($conn, $brandName);
                     <div>Privacy policy &nbsp;&nbsp; Cookie settings &nbsp;&nbsp; Terms and conditions</div>
                 </div>
             </footer>
-            <?php endif; ?>
+       <?php  endif;?>
+
         </div>
     </body>
 </html>
-
-
