@@ -2,6 +2,7 @@
 include_once '../../includes/auth_guard.php';
 include_once '../../includes/config.php';
 include_once '../../includes/session.php';
+include 'Search.php';
 requireRole(['Buyer']);
 
 $conn = getConnection();
@@ -13,16 +14,18 @@ $query = "SELECT p.product_id, p.product_Name ,p.brand , p.short_description,p.f
     Left Join nps_Ratings r on p.product_id = r.product_id
     Left Join nps_product_images pi on p.product_id = pi.product_id AND pi.is_primary = 1 WHERE p.product_id = $id
     GROUP By p.product_id";
-$result = mysqli_query($conn, $query);
-$product = mysqli_fetch_assoc($result);
+$results = mysqli_query($conn, $query);
+$product = mysqli_fetch_assoc($results);
 $q = "SELECT
          p.product_id,
          c.comment_text,
          c.created_at,
          u.full_name,
          COUNT(c.comment_id) AS total_comments 
-         FROM nps_products p INNER JOIN nps_comments c on p.product_id = c.product_id 
-         INNER JOIN nps_users u on c.user_id = u.user_id WHERE p.product_id = $id
+         FROM nps_products p 
+         INNER JOIN nps_comments c on p.product_id = c.product_id 
+         INNER JOIN nps_users u on c.user_id = u.user_id 
+         WHERE p.product_id = $id
          GROUP BY p.product_id 
          ORDER BY c.created_at DESC";
 $comments = mysqli_query($conn, $q);
@@ -86,7 +89,7 @@ $comments = mysqli_query($conn, $q);
             padding: 20px;
         }
 
-        .product-card {
+        .product-cards {
             background: white;
             border-radius: 20px;
             padding: 30px;
@@ -111,7 +114,7 @@ $comments = mysqli_query($conn, $q);
             object-fit: contain;
         }
 
-        .product-info {
+        _product-info {
             display: flex;
             flex-direction: column;
             gap: 18px;
@@ -139,12 +142,12 @@ $comments = mysqli_query($conn, $q);
             line-height: 1.7;
         }
 
-        .rating {
+        _rating {
             color: #f59e0b;
             font-size: 18px;
         }
 
-        .price {
+        _price {
             font-size: 32px;
             font-weight: bold;
             color: #2563eb;
@@ -177,6 +180,10 @@ $comments = mysqli_query($conn, $q);
             font-weight: bold;
             cursor: pointer;
         }
+         a {
+        text-decoration: none;
+        color: inherit;
+    }
 
         .add-cart {
             background: #2563eb;
@@ -195,6 +202,87 @@ $comments = mysqli_query($conn, $q);
             border-radius: 20px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.06);
         }
+        
+    /* Row */
+    .product-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow-x: auto;
+        gap: 20px;
+        padding: 20px;
+    }
+    /* Hide scrollbar (optional) */
+    .product-row::-webkit-scrollbar {
+        height: 8px;
+    }
+    .product-result {
+        display: flex;
+        position: absolute;
+        top:20%;
+            left:4%;
+      width: 92%;
+    z-index: 1000;
+    }
+    /* Product Card */
+    .product-card {
+        min-width: 200px; 
+        max-width: 230px;
+        height: 300px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0; /* prevents shrinking */
+        transition: 0.3s;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+    /* Product Image */
+    .product_images {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    /* Product Name */
+    .product-name {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 10px 0 5px;
+    }
+    /* Description */
+    .product-description {
+        font-size: 13px;
+        color: #777;
+        height: 35px;
+        overflow: hidden;
+    }
+    .product-info {
+        display: flex;
+        justify-content:  space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+    /* Price */
+    .product-price {
+        font-weight: bold;
+        color: #27ae60;
+        margin: 8px 0;
+    }
+    /* Rating */
+    .rating {
+        color: #f1c40f;
+        font-size: 14px;
+    }
+    .topBar{
+        margin-left: 4%; 
+        margin-right: 4%;
+    }
+   
 
         .section h2 {
             margin-bottom: 15px;
@@ -259,18 +347,22 @@ $comments = mysqli_query($conn, $q);
     </head>
     
     <body>
+         <div class="topBar">
+        <?php include '../../includes/buyer_topBar.php'; ?>
+        </div>
       
         <div class="page-wrapper">
-    
-       
+    <?php
+            if (!$isSearching){
+       ?>
 <div class="container">
-    <div class="product-card">
+    <div class="product-cards">
 
         <div class="product-image-box">
             <img src="../../<?php echo $product["image_path"];?>" alt="Product Image">
         </div>
 
-        <div class="product-info">
+        <div class="_product-info">
             <div class="brand">Brand: <span><?php echo $product['brand'];?></span></div>
 
             <h1 class="product-title"><?php echo $product['product_Name'];?></h1>
@@ -279,7 +371,7 @@ $comments = mysqli_query($conn, $q);
             <?php echo $product["short_description"];?>
             </p>
 
-            <div class="rating">
+            <div class="_rating">
                 <?php
                 $s =" ";
                 $stars = floor($product['Rating']);
@@ -289,7 +381,7 @@ $comments = mysqli_query($conn, $q);
                 }
                  echo " " .  $product["Rating"];?></div>
 
-            <div class="price">$<?php echo $product["price"];?></div>
+            <div class="_price">$<?php echo $product["price"];?></div>
 
             <div class="seller">Sold by: <span><?php echo $product['seller_name'];?></span></div>
 
@@ -315,25 +407,27 @@ $comments = mysqli_query($conn, $q);
 
     <div class="section">
         <h2>Customer Reviews</h2>
-         <?php if($comments){
-             while($ro = mysqli_fetch_assoc($comments)){
-             ?>
+      <?php
+        if(mysqli_num_rows($comments)){
+             while ($ro = mysqli_fetch_assoc($comments)){
+            
+            ?>
+        
         <div class="review">
-            <strong><?php echo $ro['u.full_name'];?></strong>
+            <strong><?php echo $ro['full_name'];?></strong>
             <div class="rating"></div>
-            <p></p>
+            <p><?php  echo $ro['comment_text'];?></p>
         </div>
-
-        <?php 
-             }
-         }else{
-             echo "NO Review";
-         }
-             ?>
-       
+    <?php
+        } 
+        }
+        else
+        {
+            echo "No Reviews found";
+        }
+        ?>
     </div>
 
-</div>
 
          <footer class="footer">
                 <div class="footer-top">
@@ -367,7 +461,9 @@ $comments = mysqli_query($conn, $q);
                     <div>Privacy policy &nbsp;&nbsp; Cookie settings &nbsp;&nbsp; Terms and conditions</div>
                 </div>
             </footer>
-        </div>
+                     <?php } ?>
+        
+</div>
     </body>
 </html>
 
