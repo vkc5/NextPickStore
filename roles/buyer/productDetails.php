@@ -7,6 +7,15 @@ requireRole(['Buyer']);
 
 $conn = getConnection();
 
+function productImagePath($path)
+{
+    if (!empty($path)) {
+        return "../../" . htmlspecialchars($path);
+    }
+
+    return "../../assets/images/products/default.png";
+}
+
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $userId = $_SESSION['user_id'] ?? 0;
 
@@ -390,19 +399,19 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
             background: #fff;
             border: 1px solid #ececec;
             border-radius: 16px;
-            padding: 28px;
+            padding: 24px;
             display: grid;
-            grid-template-columns: 1fr 1.15fr;
-            gap: 36px;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 30px;
             margin-bottom: 22px;
         }
 
         .product-image-box {
-            background: #fafafa;
+            background: linear-gradient(135deg, #f8faff, #f4f4f6);
             border: 1px solid #eeeeee;
-            border-radius: 14px;
-            min-height: 420px;
-            padding: 28px;
+            border-radius: 16px;
+            min-height: 350px;
+            padding: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -410,14 +419,14 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
 
         .product-image-box img {
             width: 100%;
-            max-height: 400px;
+            max-height: 320px;
             object-fit: contain;
         }
 
         .product-info {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
         }
 
         .label-row {
@@ -460,22 +469,22 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
         }
 
         .product-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             color: #111827;
-            line-height: 1.2;
+            line-height: 1.18;
             letter-spacing: -0.4px;
         }
 
         .short-desc {
             font-size: 14.5px;
             color: #555;
-            line-height: 1.7;
+            line-height: 1.65;
         }
 
         .meta-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
         }
 
@@ -504,7 +513,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
         }
 
         .product-price {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 800;
             color: #3158ff;
             letter-spacing: -0.5px;
@@ -515,6 +524,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
             flex-direction: column;
             gap: 8px;
             max-width: 160px;
+            margin-bottom: 14px;
         }
 
         .quantity-row label {
@@ -588,8 +598,8 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
             background: #fff;
             border: 1px solid #ececec;
             border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 22px;
+            padding: 22px;
+            margin-bottom: 18px;
         }
 
         .section-card-header {
@@ -616,7 +626,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
         .section-card p {
             font-size: 14px;
             color: #555;
-            line-height: 1.8;
+            line-height: 1.75;
         }
 
         /* REVIEW FORM */
@@ -627,7 +637,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
 
         .form-row {
             display: grid;
-            grid-template-columns: 260px 1fr;
+            grid-template-columns: 240px minmax(0, 1fr);
             gap: 16px;
         }
 
@@ -656,7 +666,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
         }
 
         textarea.form-control {
-            min-height: 120px;
+            min-height: 105px;
             resize: vertical;
         }
 
@@ -1012,7 +1022,6 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
             <div class="nav-actions">
                 <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
                 <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
-                <a href="profile/" class="icon-btn" title="Profile">♡</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 
@@ -1045,8 +1054,9 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
 
                 <div class="product-image-box">
                     <img
-                        src="../../<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/default.png'; ?>"
+                        src="<?php echo productImagePath($product['image_path']); ?>"
                         alt="<?php echo htmlspecialchars($product['product_Name']); ?>"
+                        onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
                     >
                 </div>
 

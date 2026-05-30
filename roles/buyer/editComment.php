@@ -676,11 +676,10 @@ $pageTitle = $comment ? 'Edit Comment' : 'Comment Not Found';
             </form>
 
             <div class="nav-actions">
-                <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
-                <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
-                <a href="profile/" class="icon-btn" title="Profile">♡</a>
-                <a href="../../auth/logout.php" class="logout-btn">Logout</a>
-            </div>
+    <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
+    <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
+    <a href="../../auth/logout.php" class="logout-btn">Logout</a>
+</div>
 
         </div>
     </header>

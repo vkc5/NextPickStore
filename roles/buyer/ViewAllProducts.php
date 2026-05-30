@@ -7,9 +7,29 @@ requireRole(['Buyer']);
 
 $conn = getConnection();
 
+function productImagePath($path)
+{
+    if (!empty($path)) {
+        return "../../" . htmlspecialchars($path);
+    }
+
+    return "../../assets/images/products/default.png";
+}
+
 $isSearching = $isSearching ?? false;
 
 $type = isset($_GET['type']) ? (string) $_GET['type'] : 'allproducts';
+
+$limit = 10;
+$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+
+if ($page < 1) {
+    $page = 1;
+}
+
+$offset = ($page - 1) * $limit;
+$totalProducts = 0;
+$totalPages = 1;
 
 $pageTitle    = "All Products";
 $pageSubtitle = "Browse all electronics, accessories, and smart products.";
@@ -31,11 +51,18 @@ if ($type == "latest") {
             ROUND(AVG(r.rating_value), 2) AS Rating, 
             pi.image_path 
         FROM nps_products p
-        LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+        LEFT JOIN nps_Ratings r 
+            ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
-            ON p.product_id = pi.product_id AND pi.is_primary = 1 
+            ON p.product_id = pi.product_id 
+            AND pi.is_primary = 1 
         WHERE p.publish_status = 'published'
-        GROUP BY p.product_id
+        GROUP BY 
+            p.product_id,
+            p.product_Name,
+            p.short_description,
+            p.price,
+            pi.image_path
         ORDER BY p.created_at DESC 
         LIMIT 10
     ";
@@ -54,16 +81,43 @@ if ($type == "latest") {
             pi.image_path, 
             SUM(o.quantity) AS total 
         FROM nps_products p
-        LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+        LEFT JOIN nps_Ratings r 
+            ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
-            ON p.product_id = pi.product_id AND pi.is_primary = 1 
-        INNER JOIN nps_order_items o ON p.product_id = o.product_id
+            ON p.product_id = pi.product_id 
+            AND pi.is_primary = 1 
+        INNER JOIN nps_order_items o 
+            ON p.product_id = o.product_id
         WHERE p.publish_status = 'published'
-        GROUP BY p.product_id
+        GROUP BY 
+            p.product_id,
+            p.product_Name,
+            p.short_description,
+            p.price,
+            pi.image_path
         ORDER BY total DESC 
         LIMIT 10
     ";
 } else {
+    $countSql = "
+        SELECT COUNT(*) AS total
+        FROM nps_products
+        WHERE publish_status = 'published'
+    ";
+
+    $countResult = mysqli_query($conn, $countSql);
+
+    if ($countResult) {
+        $countRow = mysqli_fetch_assoc($countResult);
+        $totalProducts = (int)$countRow['total'];
+        $totalPages = max(1, (int)ceil($totalProducts / $limit));
+    }
+
+    if ($page > $totalPages) {
+        $page = $totalPages;
+        $offset = ($page - 1) * $limit;
+    }
+
     $query = "
         SELECT 
             p.product_id, 
@@ -73,12 +127,20 @@ if ($type == "latest") {
             ROUND(AVG(r.rating_value), 2) AS Rating, 
             pi.image_path 
         FROM nps_products p
-        LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+        LEFT JOIN nps_Ratings r 
+            ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
-            ON p.product_id = pi.product_id AND pi.is_primary = 1 
+            ON p.product_id = pi.product_id 
+            AND pi.is_primary = 1 
         WHERE p.publish_status = 'published'
-        GROUP BY p.product_id 
+        GROUP BY 
+            p.product_id,
+            p.product_Name,
+            p.short_description,
+            p.price,
+            pi.image_path
         ORDER BY p.created_at DESC
+        LIMIT $limit OFFSET $offset
     ";
 }
 
@@ -91,9 +153,11 @@ $categoryResult = mysqli_query($conn, "
         c.category_name, 
         MIN(pi.image_path) AS img
     FROM nps_categories c
-    LEFT JOIN nps_products p ON c.category_id = p.category_id
+    LEFT JOIN nps_products p 
+        ON c.category_id = p.category_id
     LEFT JOIN nps_product_images pi 
-        ON p.product_id = pi.product_id AND pi.is_primary = 1
+        ON p.product_id = pi.product_id 
+        AND pi.is_primary = 1
     GROUP BY c.category_id, c.category_name
     ORDER BY c.category_name ASC 
     LIMIT 6
@@ -146,9 +210,6 @@ if ($categoryResult) {
             overflow: hidden;
         }
 
-        /* =========================
-           HEADER
-        ========================= */
         .buyer-header {
             padding: 28px;
             background: #ffffff;
@@ -333,9 +394,6 @@ if ($categoryResult) {
             background: #123dcc;
         }
 
-        /* =========================
-           CONTENT
-        ========================= */
         .content {
             padding: 8px 28px 36px;
             background: #fcfcfc;
@@ -343,7 +401,7 @@ if ($categoryResult) {
 
         .page-hero {
             margin: 24px 0 28px;
-            border-radius: 14px;
+            border-radius: 16px;
             background: linear-gradient(135deg, #eef3ff 0%, #ffffff 100%);
             border: 1px solid #e5e7eb;
             padding: 30px 32px;
@@ -491,25 +549,27 @@ if ($categoryResult) {
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
         }
 
         .product-card {
             background: #fff;
             border: 1px solid #ececec;
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 14px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             position: relative;
             display: flex;
             flex-direction: column;
+            min-height: 255px;
         }
 
         .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.07);
+            transform: translateY(-5px);
+            box-shadow: 0 14px 30px rgba(17, 24, 39, 0.08);
+            border-color: #dbe4ff;
         }
 
         .prod-badge {
@@ -532,38 +592,44 @@ if ($categoryResult) {
 
         .prod-img-wrap {
             width: 100%;
-            height: 120px;
+            height: 145px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #fafafa;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #f8faff, #f4f4f6);
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .prod-img-wrap img {
-            max-width: 90%;
-            max-height: 108px;
+            max-width: 82%;
+            max-height: 120px;
             object-fit: contain;
         }
 
         .prod-name {
-            font-size: 12.5px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: #111827;
-            line-height: 1.4;
-            margin-bottom: 6px;
-            flex: 1;
-            min-height: 34px;
+            line-height: 1.45;
+            margin-bottom: 8px;
+            min-height: 38px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .prod-desc {
-            font-size: 11.5px;
-            color: #999;
-            line-height: 1.4;
-            margin-bottom: 10px;
-            height: 32px;
+            font-size: 11.8px;
+            color: #777;
+            line-height: 1.45;
+            margin-bottom: 12px;
+            min-height: 34px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
@@ -576,13 +642,41 @@ if ($categoryResult) {
 
         .prod-price {
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 800;
             color: #3158ff;
         }
 
         .prod-rating {
             font-size: 11.5px;
             color: #888;
+        }
+
+        .pagination-box {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 10px 14px;
+            border: 1px solid #dbe4ff;
+            border-radius: 10px;
+            color: #3158ff;
+            font-weight: 700;
+            background: #ffffff;
+            transition: 0.2s ease;
+        }
+
+        .page-btn:hover {
+            background: #eef3ff;
+        }
+
+        .page-btn.active {
+            background: #3158ff;
+            color: #ffffff;
+            border-color: #3158ff;
         }
 
         .empty-card {
@@ -621,9 +715,6 @@ if ($categoryResult) {
             line-height: 1.6;
         }
 
-        /* =========================
-           FOOTER
-        ========================= */
         .footer {
             border-top: 1px solid #ececec;
             background: #fff;
@@ -744,7 +835,6 @@ if ($categoryResult) {
 
 <div class="page-wrapper">
 
-    <!-- HEADER -->
     <header class="buyer-header">
         <div class="buyer-nav">
 
@@ -792,7 +882,6 @@ if ($categoryResult) {
 
     <main class="content">
 
-        <!-- PAGE HERO -->
         <section class="page-hero">
             <div class="page-hero-left">
                 <div class="sec-label"><?php echo htmlspecialchars($secLabel); ?></div>
@@ -811,7 +900,6 @@ if ($categoryResult) {
             </div>
         </section>
 
-        <!-- FILTER TABS -->
         <div class="filters-card">
             <span class="filters-label">View</span>
 
@@ -830,14 +918,17 @@ if ($categoryResult) {
             </div>
         </div>
 
-        <!-- PRODUCTS -->
         <div class="sec-header">
             <div class="sec-header-left">
                 <div class="sec-label"><?php echo htmlspecialchars($secLabel); ?></div>
                 <div class="sec-title"><?php echo htmlspecialchars($pageTitle); ?></div>
             </div>
 
-            <?php if ($results): ?>
+            <?php if ($type == 'allproducts'): ?>
+                <span class="sec-meta">
+                    Showing <?php echo mysqli_num_rows($results); ?> of <?php echo $totalProducts; ?> products
+                </span>
+            <?php elseif ($results): ?>
                 <span class="sec-meta"><?php echo mysqli_num_rows($results); ?> products found</span>
             <?php endif; ?>
         </div>
@@ -856,8 +947,9 @@ if ($categoryResult) {
 
                             <div class="prod-img-wrap">
                                 <img
-                                    src="../../<?php echo !empty($row['image_path']) ? htmlspecialchars($row['image_path']) : 'assets/images/products/default.png'; ?>"
+                                    src="<?php echo productImagePath($row['image_path']); ?>"
                                     alt="<?php echo htmlspecialchars($row['product_Name']); ?>"
+                                    onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
                                 >
                             </div>
 
@@ -884,6 +976,33 @@ if ($categoryResult) {
                 <?php endwhile; ?>
             </div>
 
+            <?php if ($type == 'allproducts' && $totalPages > 1): ?>
+                <div class="pagination-box">
+
+                    <?php if ($page > 1): ?>
+                        <a href="ViewAllProducts.php?type=allproducts&page=<?php echo $page - 1; ?>" class="page-btn">
+                            ← Previous
+                        </a>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <a 
+                            href="ViewAllProducts.php?type=allproducts&page=<?php echo $i; ?>" 
+                            class="page-btn <?php echo $i == $page ? 'active' : ''; ?>"
+                        >
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                        <a href="ViewAllProducts.php?type=allproducts&page=<?php echo $page + 1; ?>" class="page-btn">
+                            Next →
+                        </a>
+                    <?php endif; ?>
+
+                </div>
+            <?php endif; ?>
+
         <?php else: ?>
             <div class="empty-card">
                 <div class="empty-icon">📦</div>
@@ -898,7 +1017,6 @@ if ($categoryResult) {
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-top">
             <div>

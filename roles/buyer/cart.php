@@ -52,16 +52,57 @@ $message = '';
 ========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+    /* UPDATE QUANTITY WITH STOCK CHECK */
     if (isset($_POST['update_quantity'])) {
         $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
         $quantity = max(1, (int)($_POST['quantity'] ?? 1));
 
         if ($productId > 0 && isset($_SESSION['cart'][$productId])) {
-            $_SESSION['cart'][$productId] = $quantity;
-            $message = 'Cart quantity updated successfully.';
+
+            $stmt = mysqli_prepare($conn, "
+                SELECT stock_quantity
+                FROM nps_products
+                WHERE product_id = ?
+                  AND publish_status = 'published'
+                LIMIT 1
+            ");
+
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "i", $productId);
+                mysqli_stmt_execute($stmt);
+
+                $result = mysqli_stmt_get_result($stmt);
+                $product = mysqli_fetch_assoc($result);
+
+                mysqli_stmt_close($stmt);
+
+                if ($product) {
+                    $stockQuantity = (int)$product['stock_quantity'];
+
+                    if ($stockQuantity <= 0) {
+                        unset($_SESSION['cart'][$productId]);
+                        $message = 'This product is out of stock and was removed from your cart.';
+                    } else {
+                        if ($quantity > $stockQuantity) {
+                            $quantity = $stockQuantity;
+                            $message = 'Quantity adjusted to available stock.';
+                        } else {
+                            $message = 'Cart quantity updated successfully.';
+                        }
+
+                        $_SESSION['cart'][$productId] = $quantity;
+                    }
+                } else {
+                    unset($_SESSION['cart'][$productId]);
+                    $message = 'This product is no longer available and was removed from your cart.';
+                }
+            } else {
+                $message = 'Could not update cart quantity. Please try again.';
+            }
         }
     }
 
+    /* REMOVE ITEM */
     if (isset($_POST['remove_item'])) {
         $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
 
@@ -71,6 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    /* CLEAR CART */
     if (isset($_POST['clear_cart'])) {
         $_SESSION['cart'] = [];
         $message = 'Cart cleared successfully.';
@@ -88,6 +130,7 @@ if (!empty($_SESSION['cart'])) {
         $quantity = (int)$quantity;
 
         if ($productId <= 0 || $quantity <= 0) {
+            unset($_SESSION['cart'][$productId]);
             continue;
         }
 
@@ -101,7 +144,8 @@ if (!empty($_SESSION['cart'])) {
                 pi.image_path
             FROM nps_products p
             LEFT JOIN nps_product_images pi
-                ON p.product_id = pi.product_id AND pi.is_primary = 1
+                ON p.product_id = pi.product_id 
+                AND pi.is_primary = 1
             WHERE p.product_id = ?
               AND p.publish_status = 'published'
             LIMIT 1
@@ -119,7 +163,12 @@ if (!empty($_SESSION['cart'])) {
             if ($product) {
                 $stockQuantity = (int)$product['stock_quantity'];
 
-                if ($quantity > $stockQuantity && $stockQuantity > 0) {
+                if ($stockQuantity <= 0) {
+                    unset($_SESSION['cart'][$productId]);
+                    continue;
+                }
+
+                if ($quantity > $stockQuantity) {
                     $quantity = $stockQuantity;
                     $_SESSION['cart'][$productId] = $quantity;
                 }
@@ -186,9 +235,6 @@ $total = max(0, $subtotal + $shipping - $discount);
             overflow: hidden;
         }
 
-        /* =========================
-           HEADER
-        ========================= */
         .buyer-header {
             padding: 28px;
             background: #ffffff;
@@ -375,9 +421,6 @@ $total = max(0, $subtotal + $shipping - $discount);
             background: #123dcc;
         }
 
-        /* =========================
-           CONTENT
-        ========================= */
         .content {
             padding: 28px;
             background: #fcfcfc;
@@ -627,11 +670,13 @@ $total = max(0, $subtotal + $shipping - $discount);
             color: #3158ff;
         }
 
-        .checkout-btn {
+        .checkout-btn-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
             margin-top: 18px;
             height: 48px;
-            border: none;
             border-radius: 12px;
             background: #1A4DE1;
             color: #fff;
@@ -640,7 +685,7 @@ $total = max(0, $subtotal + $shipping - $discount);
             cursor: pointer;
         }
 
-        .checkout-btn:hover {
+        .checkout-btn-link:hover {
             background: #123dcc;
         }
 
@@ -709,9 +754,6 @@ $total = max(0, $subtotal + $shipping - $discount);
             color: #666;
         }
 
-        /* =========================
-           FOOTER
-        ========================= */
         .footer {
             border-top: 1px solid #ececec;
             background: #fff;
@@ -839,7 +881,6 @@ $total = max(0, $subtotal + $shipping - $discount);
 
 <div class="page-wrapper">
 
-    <!-- HEADER -->
     <header class="buyer-header">
         <div class="buyer-nav">
 
@@ -890,7 +931,6 @@ $total = max(0, $subtotal + $shipping - $discount);
 
     <main class="content">
 
-        <!-- PAGE HERO -->
         <section class="page-hero">
             <div>
                 <h1>Shopping Cart</h1>
@@ -899,11 +939,11 @@ $total = max(0, $subtotal + $shipping - $discount);
 
             <div class="hero-actions">
                 <a href="dashboard.php">
-                    <button class="btn btn-light">Back to Dashboard</button>
+                    <button class="btn btn-light" type="button">Back to Dashboard</button>
                 </a>
 
                 <a href="ViewAllProducts.php?type=allproducts">
-                    <button class="btn btn-primary">Continue Shopping</button>
+                    <button class="btn btn-primary" type="button">Continue Shopping</button>
                 </a>
             </div>
         </section>
@@ -918,7 +958,6 @@ $total = max(0, $subtotal + $shipping - $discount);
 
             <section class="cart-layout">
 
-                <!-- CART ITEMS -->
                 <div class="cart-card">
                     <h2 class="card-title">Cart Items</h2>
 
@@ -986,7 +1025,6 @@ $total = max(0, $subtotal + $shipping - $discount);
                     <?php endforeach; ?>
                 </div>
 
-                <!-- SUMMARY -->
                 <aside class="summary-card">
                     <h2 class="card-title">Order Summary</h2>
 
@@ -1010,8 +1048,8 @@ $total = max(0, $subtotal + $shipping - $discount);
                         <span>€<?php echo number_format($total, 2); ?></span>
                     </div>
 
-                    <a href="checkout.php">
-                        <button class="checkout-btn">Proceed to Checkout</button>
+                    <a href="checkout.php" class="checkout-btn-link">
+                        Proceed to Checkout
                     </a>
 
                     <form method="POST" class="clear-cart-form">
@@ -1047,7 +1085,6 @@ $total = max(0, $subtotal + $shipping - $discount);
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-top">
             <div>

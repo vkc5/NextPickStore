@@ -1,6 +1,7 @@
 <?php
 include_once '../../includes/auth_guard.php';
 include_once '../../includes/config.php';
+include_once '../../includes/session.php';
 
 requireRole(['Buyer']);
 
@@ -17,7 +18,7 @@ $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
 $commentText = trim($_POST['comment_text'] ?? '');
 $ratingValue = isset($_POST['rating_value']) ? (int)$_POST['rating_value'] : 0;
 
-if ($productId <= 0) {
+if ($productId <= 0 || $userId <= 0) {
     header("Location: dashboard.php");
     exit();
 }
@@ -27,18 +28,20 @@ if ($commentText === '' && ($ratingValue < 1 || $ratingValue > 5)) {
     exit();
 }
 
-/* =========================
-   CHECK PRODUCT EXISTS
-========================= */
-$checkProductSql = "
+/* Check product exists and is published */
+$stmt = mysqli_prepare($conn, "
     SELECT product_id
     FROM nps_products
     WHERE product_id = ?
       AND publish_status = 'published'
     LIMIT 1
-";
+");
 
-$stmt = mysqli_prepare($conn, $checkProductSql);
+if (!$stmt) {
+    header("Location: productDetails.php?id=" . $productId . "&error=failed");
+    exit();
+}
+
 mysqli_stmt_bind_param($stmt, "i", $productId);
 mysqli_stmt_execute($stmt);
 
@@ -52,17 +55,13 @@ if (!$product) {
     exit();
 }
 
-/* =========================
-   ADD COMMENT
-========================= */
+/* Add comment */
 if ($commentText !== '') {
-    $commentSql = "
+    $stmt = mysqli_prepare($conn, "
         INSERT INTO nps_comments
         (product_id, user_id, comment_text, created_at)
         VALUES (?, ?, ?, NOW())
-    ";
-
-    $stmt = mysqli_prepare($conn, $commentSql);
+    ");
 
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, "iis", $productId, $userId, $commentText);
@@ -71,64 +70,58 @@ if ($commentText !== '') {
     }
 }
 
-/* =========================
-   ADD OR UPDATE RATING
-   This restricts the buyer to one rating per product.
-========================= */
+/* Add or update rating */
 if ($ratingValue >= 1 && $ratingValue <= 5) {
 
-    $checkRatingSql = "
+    $stmt = mysqli_prepare($conn, "
         SELECT rating_id
         FROM nps_Ratings
         WHERE product_id = ?
           AND user_id = ?
         LIMIT 1
-    ";
+    ");
 
-    $stmt = mysqli_prepare($conn, $checkRatingSql);
-    mysqli_stmt_bind_param($stmt, "ii", $productId, $userId);
-    mysqli_stmt_execute($stmt);
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "ii", $productId, $userId);
+        mysqli_stmt_execute($stmt);
 
-    $ratingResult = mysqli_stmt_get_result($stmt);
-    $existingRating = mysqli_fetch_assoc($ratingResult);
+        $ratingResult = mysqli_stmt_get_result($stmt);
+        $existingRating = mysqli_fetch_assoc($ratingResult);
 
-    mysqli_stmt_close($stmt);
+        mysqli_stmt_close($stmt);
 
-    if ($existingRating) {
-        $updateRatingSql = "
-            UPDATE nps_Ratings
-            SET rating_value = ?
-            WHERE rating_id = ?
-              AND user_id = ?
-        ";
+        if ($existingRating) {
+            $stmt = mysqli_prepare($conn, "
+                UPDATE nps_Ratings
+                SET rating_value = ?
+                WHERE rating_id = ?
+                  AND user_id = ?
+            ");
 
-        $stmt = mysqli_prepare($conn, $updateRatingSql);
+            if ($stmt) {
+                mysqli_stmt_bind_param(
+                    $stmt,
+                    "iii",
+                    $ratingValue,
+                    $existingRating['rating_id'],
+                    $userId
+                );
 
-        if ($stmt) {
-            mysqli_stmt_bind_param(
-                $stmt,
-                "iii",
-                $ratingValue,
-                $existingRating['rating_id'],
-                $userId
-            );
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+            }
+        } else {
+            $stmt = mysqli_prepare($conn, "
+                INSERT INTO nps_Ratings
+                (product_id, user_id, rating_value, created_at)
+                VALUES (?, ?, ?, NOW())
+            ");
 
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-        }
-    } else {
-        $insertRatingSql = "
-            INSERT INTO nps_Ratings
-            (product_id, user_id, rating_value, created_at)
-            VALUES (?, ?, ?, NOW())
-        ";
-
-        $stmt = mysqli_prepare($conn, $insertRatingSql);
-
-        if ($stmt) {
-            mysqli_stmt_bind_param($stmt, "iii", $productId, $userId, $ratingValue);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "iii", $productId, $userId, $ratingValue);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+            }
         }
     }
 }

@@ -7,6 +7,29 @@ requireRole(['Buyer']);
 
 $conn = getConnection();
 
+function productImagePath($path)
+{
+    if (!empty($path)) {
+        return "../../" . htmlspecialchars($path);
+    }
+
+    return "../../assets/images/products/default.png";
+}
+
+function categoryIcon($categoryName)
+{
+    $name = strtolower($categoryName);
+
+    if (strpos($name, 'camera') !== false) return '📷';
+    if (strpos($name, 'headphone') !== false) return '🎧';
+    if (strpos($name, 'laptop') !== false) return '💻';
+    if (strpos($name, 'smartphone') !== false || strpos($name, 'phone') !== false) return '📱';
+    if (strpos($name, 'watch') !== false) return '⌚';
+    if (strpos($name, 'speaker') !== false) return '🔊';
+
+    return '🛍️';
+}
+
 /* =========================
    SEARCH HANDLING
 ========================= */
@@ -84,7 +107,7 @@ $new = mysqli_query($conn, "
     WHERE p.publish_status = 'published'
     GROUP BY p.product_id
     ORDER BY p.created_at DESC 
-    LIMIT 6
+    LIMIT 5
 ");
 
 /* =========================
@@ -132,7 +155,7 @@ $bestSeller = mysqli_query($conn, "
     WHERE p.publish_status = 'published'
     GROUP BY p.product_id 
     ORDER BY total DESC 
-    LIMIT 6
+    LIMIT 5
 ");
 ?>
 
@@ -368,10 +391,10 @@ $bestSeller = mysqli_query($conn, "
            HERO
         ========================= */
         .hero-section {
-            margin: 24px 28px;
-            border-radius: 14px;
+            margin: 22px 28px;
+            border-radius: 18px;
             overflow: hidden;
-            height: 390px;
+            height: 330px;
             background: #d87328;
             position: relative;
             display: flex;
@@ -392,8 +415,9 @@ $bestSeller = mysqli_query($conn, "
             inset: 0;
             background: linear-gradient(
                 90deg,
-                rgba(255,255,255,0.75) 0%,
-                rgba(255,255,255,0.25) 35%,
+                rgba(255,255,255,0.88) 0%,
+                rgba(255,255,255,0.62) 30%,
+                rgba(255,255,255,0.12) 62%,
                 rgba(255,255,255,0.02) 100%
             );
         }
@@ -422,12 +446,12 @@ $bestSeller = mysqli_query($conn, "
         }
 
         .hero-title {
-            font-size: 44px;
+            font-size: 40px;
             font-weight: 800;
             color: #111827;
-            line-height: 1.1;
-            margin-bottom: 14px;
-            letter-spacing: -0.5px;
+            line-height: 1.08;
+            margin-bottom: 12px;
+            letter-spacing: -0.6px;
         }
 
         .hero-sub {
@@ -542,25 +566,27 @@ $bestSeller = mysqli_query($conn, "
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
         }
 
         .product-card {
             background: #fff;
             border: 1px solid #ececec;
-            border-radius: 14px;
+            border-radius: 16px;
             padding: 14px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             position: relative;
             display: flex;
             flex-direction: column;
+            min-height: 245px;
         }
 
         .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.07);
+            transform: translateY(-5px);
+            box-shadow: 0 14px 30px rgba(17,24,39,0.08);
+            border-color: #dbe4ff;
         }
 
         .prod-badge {
@@ -583,30 +609,30 @@ $bestSeller = mysqli_query($conn, "
 
         .prod-img-wrap {
             width: 100%;
-            height: 120px;
+            height: 145px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #fafafa;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #f8faff, #f4f4f6);
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .prod-img-wrap img {
-            max-width: 90%;
-            max-height: 108px;
+            max-width: 82%;
+            max-height: 120px;
             object-fit: contain;
         }
 
         .prod-name {
-            font-size: 12.5px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: #111827;
-            line-height: 1.4;
+            line-height: 1.45;
             margin-bottom: 10px;
             flex: 1;
-            min-height: 34px;
+            min-height: 38px;
         }
 
         .prod-footer {
@@ -682,46 +708,60 @@ $bestSeller = mysqli_query($conn, "
         .cat-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 16px;
+            gap: 18px;
         }
 
         .cat-card {
             background: #fff;
             border: 1px solid #ececec;
-            border-radius: 14px;
-            padding: 18px 12px 14px;
+            border-radius: 16px;
+            padding: 22px 14px 18px;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            min-height: 128px;
         }
 
         .cat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 26px rgba(17,24,39,0.07);
+            border-color: #dbe4ff;
         }
 
         .cat-img-wrap {
             width: 58px;
             height: 58px;
-            border-radius: 12px;
-            background: #f4f4f6;
+            border-radius: 16px;
+            background: #eef3ff;
+            color: #3158ff;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 10px;
+            margin: 0 auto 12px;
             overflow: hidden;
         }
 
         .cat-img-wrap img {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
         }
 
+        .cat-fallback-icon {
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
         .cat-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .promo-grid {
@@ -732,10 +772,10 @@ $bestSeller = mysqli_query($conn, "
         }
 
         .promo-card {
-            border-radius: 14px;
+            border-radius: 18px;
             overflow: hidden;
             position: relative;
-            height: 280px;
+            height: 250px;
             background: #f3f4f6;
             cursor: pointer;
         }
@@ -755,7 +795,12 @@ $bestSeller = mysqli_query($conn, "
         .promo-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(155deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%);
+            background: linear-gradient(
+                90deg,
+                rgba(0,0,0,0.48) 0%,
+                rgba(0,0,0,0.18) 50%,
+                rgba(0,0,0,0.08) 100%
+            );
         }
 
         .promo-content {
@@ -1092,6 +1137,7 @@ $bestSeller = mysqli_query($conn, "
             src="../../assets/images/products/banner-tech-store.png.png"
             alt="Banner" 
             id="heroImg"
+            onerror="this.onerror=null; this.style.display='none';"
         >
 
         <div class="hero-overlay"></div>
@@ -1152,8 +1198,9 @@ $bestSeller = mysqli_query($conn, "
                                 <div class="product-card">
                                     <div class="prod-img-wrap">
                                         <img 
-                                            src="../../<?php echo htmlspecialchars($row['image_path']); ?>"
+                                            src="<?php echo productImagePath($row['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($row['product_Name']); ?>"
+                                            onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
                                         >
                                     </div>
 
@@ -1218,8 +1265,9 @@ $bestSeller = mysqli_query($conn, "
 
                                     <div class="prod-img-wrap">
                                         <img 
-                                            src="../../<?php echo htmlspecialchars($row['image_path']); ?>"
+                                            src="<?php echo productImagePath($row['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($row['product_Name']); ?>"
+                                            onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
                                         >
                                     </div>
 
@@ -1313,10 +1361,20 @@ $bestSeller = mysqli_query($conn, "
                             <a href="productCategory.php?id=<?php echo $cat['category_id']; ?>&name=<?php echo urlencode($cat['category_name']); ?>">
                                 <div class="cat-card">
                                     <div class="cat-img-wrap">
-                                        <img 
-                                            src="../../<?php echo htmlspecialchars($cat['img']); ?>"
-                                            alt="<?php echo htmlspecialchars($cat['category_name']); ?>"
-                                        >
+                                        <?php if (!empty($cat['img'])): ?>
+                                            <img 
+                                                src="<?php echo productImagePath($cat['img']); ?>"
+                                                alt="<?php echo htmlspecialchars($cat['category_name']); ?>"
+                                                onerror="this.style.display='none'; this.parentElement.querySelector('.cat-fallback-icon').style.display='flex';"
+                                            >
+                                            <span class="cat-fallback-icon" style="display:none;">
+                                                <?php echo categoryIcon($cat['category_name']); ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="cat-fallback-icon">
+                                                <?php echo categoryIcon($cat['category_name']); ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
 
                                     <div class="cat-name">
@@ -1334,7 +1392,7 @@ $bestSeller = mysqli_query($conn, "
             <!-- PROMO CARDS -->
             <div class="promo-grid">
                 <div class="promo-card">
-                    <img src="../../assets/images/products/promo-laptop.jpg" alt="MacBook Pro Promo">
+                    <img src="../../assets/images/products/promo-laptop.jpg" alt="MacBook Pro Promo" onerror="this.style.display='none';">
 
                     <div class="promo-overlay"></div>
 
@@ -1352,7 +1410,7 @@ $bestSeller = mysqli_query($conn, "
                 </div>
 
                 <div class="promo-card">
-                    <img src="../../assets/images/products/promo-speaker.jpg" alt="Speakers Promo">
+                    <img src="../../assets/images/products/promo-speaker.jpg" alt="Speakers Promo" onerror="this.style.display='none';">
 
                     <div class="promo-overlay"></div>
 
@@ -1392,8 +1450,9 @@ $bestSeller = mysqli_query($conn, "
 
                                     <div class="prod-img-wrap">
                                         <img 
-                                            src="../../<?php echo htmlspecialchars($r['image_path']); ?>"
+                                            src="<?php echo productImagePath($r['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($r['product_Name']); ?>"
+                                            onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
                                         >
                                     </div>
 
@@ -1498,6 +1557,7 @@ $bestSeller = mysqli_query($conn, "
     function goSlide(i) {
         current = i;
 
+        document.getElementById('heroImg').style.display = 'block';
         document.getElementById('heroImg').src = slides[i].img;
         document.getElementById('heroTitle').innerHTML = slides[i].title;
         document.getElementById('heroSub').textContent = slides[i].sub;

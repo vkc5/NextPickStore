@@ -9,6 +9,15 @@ $conn = getConnection();
 
 $userId = $_SESSION['user_id'] ?? 0;
 
+function productImagePath($path)
+{
+    if (!empty($path)) {
+        return "../../" . htmlspecialchars($path);
+    }
+
+    return "../../assets/images/products/default.png";
+}
+
 /* =========================
    SEARCH HANDLING
 ========================= */
@@ -167,6 +176,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     $address = trim($_POST['address'] ?? '');
     $paymentMethod = trim($_POST['payment_method'] ?? 'Cash on Delivery');
 
+    $allowedPaymentMethods = ['Cash on Delivery', 'Credit Card', 'BenefitPay'];
+
+    if (!in_array($paymentMethod, $allowedPaymentMethods, true)) {
+        $paymentMethod = 'Cash on Delivery';
+    }
+
+    $shippingAddress = "Name: " . $fullName . "\n"
+        . "Phone: " . $phone . "\n"
+        . "Address: " . $address;
+
     if (empty($cartItems)) {
         $errorMessage = 'Your cart is empty. Please add products before placing an order.';
     } elseif ($fullName === '' || $phone === '' || $address === '') {
@@ -187,12 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             mysqli_begin_transaction($conn);
 
             try {
-                /* =========================
-                   INSERT ORDER
-                   Your real nps_orders columns:
-                   order_id, buyer_id, order_date, order_status,
-                   total_amount, shipping_address, payment_method
-                ========================= */
                 $orderSql = "
                     INSERT INTO nps_orders
                     (buyer_id, order_date, order_status, total_amount, shipping_address, payment_method)
@@ -210,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     "idss",
                     $userId,
                     $total,
-                    $address,
+                    $shippingAddress,
                     $paymentMethod
                 );
 
@@ -218,11 +231,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 $orderId = mysqli_insert_id($conn);
                 mysqli_stmt_close($stmt);
 
-                /* =========================
-                   INSERT ORDER ITEMS
-                   This detects whether your table uses:
-                   price / unit_price / product_price
-                ========================= */
                 $priceColumn = pickColumn($conn, 'nps_order_items', [
                     'price',
                     'unit_price',
@@ -277,7 +285,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     mysqli_stmt_close($stmt);
                 }
 
-                /* Clear session cart after successful order */
                 $_SESSION['cart'] = [];
 
                 mysqli_commit($conn);
@@ -532,7 +539,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             background: linear-gradient(135deg, #eef3ff, #ffffff);
             border: 1px solid #ececec;
             border-radius: 16px;
-            padding: 26px 28px;
+            padding: 24px 28px;
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
@@ -541,7 +548,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         }
 
         .page-hero h1 {
-            font-size: 32px;
+            font-size: 30px;
             color: #111827;
             margin-bottom: 8px;
         }
@@ -577,14 +584,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             color: #fff;
         }
 
+        .btn-primary:hover {
+            background: #123dcc;
+        }
+
         .btn-light {
             background: #f1f1f5;
             color: #222;
         }
 
+        .btn-light:hover {
+            background: #e5e5ec;
+        }
+
         .checkout-layout {
             display: grid;
-            grid-template-columns: 1fr 380px;
+            grid-template-columns: minmax(0, 1.65fr) 430px;
             gap: 24px;
             align-items: start;
         }
@@ -595,6 +610,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             border: 1px solid #ececec;
             border-radius: 16px;
             padding: 22px;
+        }
+
+        .summary-card {
+            position: sticky;
+            top: 20px;
         }
 
         .card-title {
@@ -626,6 +646,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
         .form-grid {
             display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
         }
 
@@ -633,6 +654,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             display: flex;
             flex-direction: column;
             gap: 8px;
+        }
+
+        .form-group.full-row {
+            grid-column: 1 / -1;
         }
 
         .form-group label {
@@ -654,7 +679,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         }
 
         textarea.form-control {
-            min-height: 110px;
+            min-height: 104px;
             resize: vertical;
         }
 
@@ -665,7 +690,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
         .payment-options {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
         }
 
@@ -678,6 +703,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             align-items: center;
             gap: 10px;
             cursor: pointer;
+            min-height: 56px;
+            transition: 0.2s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #cfd9ff;
+            background: #f8faff;
         }
 
         .payment-option input {
@@ -685,14 +717,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         }
 
         .payment-option span {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 700;
             color: #111827;
         }
 
         .order-item {
             display: grid;
-            grid-template-columns: 72px 1fr auto;
+            grid-template-columns: 68px minmax(0, 1fr) auto;
             gap: 12px;
             align-items: center;
             padding: 14px 0;
@@ -704,11 +736,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         }
 
         .order-img {
-            width: 72px;
+            width: 68px;
             height: 62px;
             border-radius: 12px;
             border: 1px solid #eeeeee;
-            background: #f8f8fb;
+            background: linear-gradient(135deg, #f8faff, #f4f4f6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -718,7 +750,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
         .order-img img {
             max-width: 100%;
-            max-height: 52px;
+            max-height: 50px;
             object-fit: contain;
         }
 
@@ -727,6 +759,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             color: #111827;
             margin-bottom: 5px;
             line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .order-info p {
@@ -739,6 +775,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             color: #3158ff;
             font-weight: 800;
             white-space: nowrap;
+            text-align: right;
         }
 
         .summary-line {
@@ -905,6 +942,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 grid-template-columns: 1fr;
             }
 
+            .summary-card {
+                position: static;
+            }
+
             .footer-top {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -926,6 +967,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 align-items: flex-start;
             }
 
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
             .payment-options {
                 grid-template-columns: 1fr;
             }
@@ -941,7 +986,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
 <div class="page-wrapper">
 
-    <!-- HEADER -->
     <header class="buyer-header">
         <div class="buyer-nav">
 
@@ -982,9 +1026,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             </form>
 
             <div class="nav-actions">
-                <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
+                <a href="cart.php" class="icon-btn active" title="Cart">🛒</a>
                 <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
-                <a href="profile/" class="icon-btn" title="Profile">♡</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 
@@ -993,7 +1036,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
     <main class="content">
 
-        <!-- PAGE HERO -->
         <section class="page-hero">
             <div>
                 <h1>Checkout</h1>
@@ -1037,7 +1079,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             <form method="POST">
                 <section class="checkout-layout">
 
-                    <!-- DELIVERY FORM -->
                     <div class="checkout-card">
                         <h2 class="card-title">Delivery Details</h2>
 
@@ -1066,7 +1107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                 >
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group full-row">
                                 <label for="address">Delivery Address</label>
                                 <textarea 
                                     class="form-control"
@@ -1077,7 +1118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                 ></textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group full-row">
                                 <label>Payment Method</label>
 
                                 <div class="payment-options">
@@ -1100,21 +1141,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         </div>
                     </div>
 
-                    <!-- ORDER SUMMARY -->
                     <aside class="summary-card">
                         <h2 class="card-title">Order Summary</h2>
 
                         <?php foreach ($cartItems as $item): ?>
                             <?php
                                 $itemTotal = (float)$item['price'] * (int)$item['quantity'];
-                                $imagePath = !empty($item['image_path'])
-                                    ? '../../' . htmlspecialchars($item['image_path'])
-                                    : '../../assets/images/products/default.png';
+                                $imagePath = productImagePath($item['image_path']);
                             ?>
 
                             <div class="order-item">
                                 <div class="order-img">
-                                    <img src="<?php echo $imagePath; ?>" alt="Product image">
+                                    <img 
+                                        src="<?php echo $imagePath; ?>" 
+                                        alt="Product image"
+                                        onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                                    >
                                 </div>
 
                                 <div class="order-info">
@@ -1176,7 +1218,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-top">
             <div>
@@ -1216,7 +1257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         </div>
 
         <div class="footer-bottom">
-            <div>&copy; 2026 NEXTPICK. All Rights Reserved.</div>
+            <div>&copy; 2026 NEXTPICK. All Rights Reserved</div>
 
             <div class="footer-links">
                 <a href="#">Privacy policy</a>
