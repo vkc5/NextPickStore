@@ -13,7 +13,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/default.png";
+    return "../../assets/images/products/view.png";
 }
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -23,7 +23,7 @@ $userId = $_SESSION['user_id'] ?? 0;
 $stmt = mysqli_prepare($conn, "
     SELECT 
         p.product_id,
-        p.product_Name,
+        p.product_name,
         p.brand,
         p.short_description,
         p.full_description,
@@ -36,7 +36,7 @@ $stmt = mysqli_prepare($conn, "
         c.category_name
     FROM nps_products p
     INNER JOIN nps_users u ON p.seller_id = u.user_id
-    LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+    LEFT JOIN nps_ratings r ON p.product_id = r.product_id
     LEFT JOIN nps_product_images pi ON p.product_id = pi.product_id AND pi.is_primary = 1
     LEFT JOIN nps_categories c ON p.category_id = c.category_id
     WHERE p.product_id = ?
@@ -81,7 +81,7 @@ $userRating = '';
 if ($product && $userId > 0) {
     $stmt = mysqli_prepare($conn, "
         SELECT rating_value
-        FROM nps_Ratings
+        FROM nps_ratings
         WHERE product_id = ?
           AND user_id = ?
         LIMIT 1
@@ -122,19 +122,15 @@ if ($catResult) {
     }
 }
 
-/* === PRODUCT VIEW COUNT === */
-/* Only works if your table has view_count column */
+/* === PRODUCT VIEW TRACKING === */
 if ($product) {
-    $checkColumn = mysqli_query($conn, "SHOW COLUMNS FROM nps_products LIKE 'view_count'");
+    $stmt = mysqli_prepare($conn, "
+        INSERT INTO nps_product_views (product_id, user_id, view_date)
+        VALUES (?, ?, NOW())
+    ");
 
-    if ($checkColumn && mysqli_num_rows($checkColumn) > 0) {
-        $stmt = mysqli_prepare($conn, "
-            UPDATE nps_products
-            SET view_count = view_count + 1
-            WHERE product_id = ?
-        ");
-
-        mysqli_stmt_bind_param($stmt, "i", $id);
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     }
@@ -144,7 +140,7 @@ $averageRating = $product && $product['Rating'] ? $product['Rating'] : '0.00';
 $inStock = $product && isset($product['stock_quantity']) && (int)$product['stock_quantity'] > 0;
 $stockText = $inStock ? 'In Stock' : 'Out of Stock';
 
-$pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product Details';
+$pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product Details';
 ?>
 
 <!DOCTYPE html>
@@ -1055,8 +1051,8 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
                 <div class="product-image-box">
                     <img
                         src="<?php echo productImagePath($product['image_path']); ?>"
-                        alt="<?php echo htmlspecialchars($product['product_Name']); ?>"
-                        onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                        alt="<?php echo htmlspecialchars($product['product_name']); ?>"
+                        onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
                     >
                 </div>
 
@@ -1079,7 +1075,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_Name']) : 'Product De
                     </div>
 
                     <h1 class="product-title">
-                        <?php echo htmlspecialchars($product['product_Name']); ?>
+                        <?php echo htmlspecialchars($product['product_name']); ?>
                     </h1>
 
                     <p class="short-desc">

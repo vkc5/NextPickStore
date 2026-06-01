@@ -416,7 +416,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                             <div class="success-box"><?php echo htmlspecialchars($success); ?></div>
                         <?php endif; ?>
 
-                        <form action="process_create_user.php" method="POST">
+                        <form action="process_create_user.php" method="POST" id="adminUserForm" novalidate>
                             <div class="form-grid">
                                 <div class="field-group">
                                     <label>Name</label>
@@ -539,5 +539,26 @@ if ($result && mysqli_num_rows($result) > 0) {
                 </div>
             </footer>
         </div>
+        <script>
+            document.getElementById('adminUserForm').addEventListener('submit', function (event) {
+                const email = document.querySelector('[name="email"]');
+                const password = document.querySelector('[name="password"]');
+                const requiredFields = ['full_name', 'email', 'password', 'role_name'];
+                let valid = true;
+
+                requiredFields.forEach(function (name) {
+                    const field = document.querySelector('[name="' + name + '"]');
+                    if (!field || field.value.trim() === '') valid = false;
+                });
+
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) valid = false;
+                if (password && password.value.length < 8) valid = false;
+
+                if (!valid) {
+                    event.preventDefault();
+                    alert('Please fill all required user fields correctly.');
+                }
+            });
+        </script>
     </body>
 </html>

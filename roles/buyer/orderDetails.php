@@ -119,7 +119,7 @@ if ($order) {
             oi.product_id,
             oi.quantity,
             oi.`$priceColumn` AS item_price,
-            p.product_Name,
+            p.product_name,
             p.short_description,
             p.brand,
             pi.image_path
@@ -962,7 +962,7 @@ $status = $order['order_status'] ?? 'pending';
 
                                 $imagePath = !empty($item['image_path'])
                                     ? '../../' . htmlspecialchars($item['image_path'])
-                                    : '../../assets/images/products/default.png';
+                                    : '../../assets/images/products/view.png';
                             ?>
 
                             <div class="order-item">
@@ -971,7 +971,7 @@ $status = $order['order_status'] ?? 'pending';
                                 </a>
 
                                 <div class="item-info">
-                                    <h3><?php echo htmlspecialchars($item['product_Name']); ?></h3>
+                                    <h3><?php echo htmlspecialchars($item['product_name']); ?></h3>
 
                                     <p>
                                         <?php echo htmlspecialchars($item['short_description'] ?? ''); ?>

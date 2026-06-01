@@ -131,7 +131,7 @@ function getOrderItems($conn, $orderId, $priceColumn)
             oi.quantity,
             oi.`$priceColumn` AS item_price,
             p.product_id,
-            p.product_Name,
+            p.product_name,
             pi.image_path
         FROM nps_order_items oi
         INNER JOIN nps_products p
@@ -924,7 +924,7 @@ function statusClass($status)
                                     <?php
                                         $imagePath = !empty($item['image_path'])
                                             ? '../../' . htmlspecialchars($item['image_path'])
-                                            : '../../assets/images/products/default.png';
+                                            : '../../assets/images/products/view.png';
 
                                         $lineTotal = (float)$item['item_price'] * (int)$item['quantity'];
                                     ?>
@@ -935,7 +935,7 @@ function statusClass($status)
                                         </a>
 
                                         <div class="item-info">
-                                            <h3><?php echo htmlspecialchars($item['product_Name']); ?></h3>
+                                            <h3><?php echo htmlspecialchars($item['product_name']); ?></h3>
                                             <p>
                                                 Quantity: <?php echo (int)$item['quantity']; ?>
                                                 · Unit Price: €<?php echo number_format((float)$item['item_price'], 2); ?>

@@ -137,7 +137,7 @@ if (!empty($_SESSION['cart'])) {
         $stmt = mysqli_prepare($conn, "
             SELECT
                 p.product_id,
-                p.product_Name,
+                p.product_name,
                 p.short_description,
                 p.price,
                 p.stock_quantity,
@@ -966,7 +966,7 @@ $total = max(0, $subtotal + $shipping - $discount);
                             $itemTotal = (float)$item['price'] * (int)$item['quantity'];
                             $imagePath = !empty($item['image_path'])
                                 ? '../../' . htmlspecialchars($item['image_path'])
-                                : '../../assets/images/products/default.png';
+                                : '../../assets/images/products/view.png';
 
                             $isItemInStock = (int)$item['stock_quantity'] > 0;
                         ?>
@@ -977,7 +977,7 @@ $total = max(0, $subtotal + $shipping - $discount);
                             </a>
 
                             <div class="item-info">
-                                <h3><?php echo htmlspecialchars($item['product_Name']); ?></h3>
+                                <h3><?php echo htmlspecialchars($item['product_name']); ?></h3>
                                 <p><?php echo htmlspecialchars($item['short_description']); ?></p>
 
                                 <span class="stock <?php echo $isItemInStock ? 'in-stock-label' : 'out-stock-label'; ?>">

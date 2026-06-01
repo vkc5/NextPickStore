@@ -87,19 +87,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Price must be a valid positive number.";
     } elseif (!is_numeric($stockQuantity) || $stockQuantity < 0) {
         $error = "Stock quantity must be a valid positive number.";
+    } elseif (!in_array($publishStatus, ['draft', 'published', 'hidden'], true)) {
+        $error = "Invalid publish status selected.";
     } else {
         $newImagePath = $currentImagePath;
 
         if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === 0) {
             $uploadDir = "../../uploads/products/";
-            $fileName = time() . "_" . basename($_FILES["product_image"]["name"]);
+            $originalName = basename($_FILES["product_image"]["name"]);
+            $fileName = time() . "_" . preg_replace('/[^A-Za-z0-9.\-_]/', '_', $originalName);
             $targetFile = $uploadDir . $fileName;
             $dbPath = "uploads/products/" . $fileName;
 
             $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
             $fileType = mime_content_type($_FILES['product_image']['tmp_name']);
+            $fileSize = (int)($_FILES['product_image']['size'] ?? 0);
 
-            if (!in_array($fileType, $allowedTypes)) {
+            if ($fileSize > 5 * 1024 * 1024) {
+                $error = "Image must be 5MB or smaller.";
+            } elseif (!in_array($fileType, $allowedTypes)) {
                 $error = "Only JPG, PNG, and WEBP images are allowed.";
             } else {
                 if (move_uploaded_file($_FILES["product_image"]["tmp_name"], $targetFile)) {
@@ -524,8 +530,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
 
-    <li><a href="settings.php"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
-
     <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
 
     <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
@@ -544,14 +548,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php } ?>
 
                 <div class="product-preview">
-                    <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/default.png'; ?>" alt="Product">
+                    <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/view.png'; ?>" alt="Product">
                     <div>
                         <h3><?php echo htmlspecialchars($product['product_name']); ?></h3>
                         <p>Current brand: <?php echo htmlspecialchars($product['brand'] ?: '-'); ?></p>
                     </div>
                 </div>
 
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" enctype="multipart/form-data" id="sellerProductForm" novalidate>
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Product Name</label>
@@ -671,5 +675,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </footer>
 </div>
 
+<script>
+document.getElementById('sellerProductForm').addEventListener('submit', function (event) {
+    const requiredFields = ['product_name', 'category_id', 'publish_status', 'price', 'stock_quantity', 'short_description', 'full_description'];
+    let valid = true;
+
+    requiredFields.forEach(function (name) {
+        const field = document.querySelector('[name="' + name + '"]');
+        if (!field || field.value.trim() === '') {
+            valid = false;
+            if (field) field.focus();
+        }
+    });
+
+    const price = document.querySelector('[name="price"]');
+    const stock = document.querySelector('[name="stock_quantity"]');
+    if (price && (price.value === '' || Number(price.value) < 0)) valid = false;
+    if (stock && (stock.value === '' || Number(stock.value) < 0)) valid = false;
+
+    if (!valid) {
+        event.preventDefault();
+        alert('Please fill all required product fields correctly.');
+    }
+});
+</script>
 </body>
 </html>

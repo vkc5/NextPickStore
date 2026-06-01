@@ -13,7 +13,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/default.png";
+    return "../../assets/images/products/view.png";
 }
 
 $isSearching = $isSearching ?? false;
@@ -45,13 +45,13 @@ if ($type == "latest") {
     $query = "
         SELECT 
             p.product_id, 
-            p.product_Name, 
+            p.product_name,
             p.short_description, 
             p.price, 
             ROUND(AVG(r.rating_value), 2) AS Rating, 
             pi.image_path 
         FROM nps_products p
-        LEFT JOIN nps_Ratings r 
+        LEFT JOIN nps_ratings r
             ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
             ON p.product_id = pi.product_id 
@@ -59,7 +59,7 @@ if ($type == "latest") {
         WHERE p.publish_status = 'published'
         GROUP BY 
             p.product_id,
-            p.product_Name,
+            p.product_name,
             p.short_description,
             p.price,
             pi.image_path
@@ -74,14 +74,14 @@ if ($type == "latest") {
     $query = "
         SELECT 
             p.product_id, 
-            p.product_Name, 
+            p.product_name,
             p.short_description, 
             p.price, 
             ROUND(AVG(r.rating_value), 2) AS Rating, 
             pi.image_path, 
             SUM(o.quantity) AS total 
         FROM nps_products p
-        LEFT JOIN nps_Ratings r 
+        LEFT JOIN nps_ratings r
             ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
             ON p.product_id = pi.product_id 
@@ -91,7 +91,7 @@ if ($type == "latest") {
         WHERE p.publish_status = 'published'
         GROUP BY 
             p.product_id,
-            p.product_Name,
+            p.product_name,
             p.short_description,
             p.price,
             pi.image_path
@@ -121,13 +121,13 @@ if ($type == "latest") {
     $query = "
         SELECT 
             p.product_id, 
-            p.product_Name, 
+            p.product_name,
             p.short_description, 
             p.price, 
             ROUND(AVG(r.rating_value), 2) AS Rating, 
             pi.image_path 
         FROM nps_products p
-        LEFT JOIN nps_Ratings r 
+        LEFT JOIN nps_ratings r
             ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
             ON p.product_id = pi.product_id 
@@ -135,7 +135,7 @@ if ($type == "latest") {
         WHERE p.publish_status = 'published'
         GROUP BY 
             p.product_id,
-            p.product_Name,
+            p.product_name,
             p.short_description,
             p.price,
             pi.image_path
@@ -948,13 +948,13 @@ if ($categoryResult) {
                             <div class="prod-img-wrap">
                                 <img
                                     src="<?php echo productImagePath($row['image_path']); ?>"
-                                    alt="<?php echo htmlspecialchars($row['product_Name']); ?>"
-                                    onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                                    alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                                    onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
                                 >
                             </div>
 
                             <div class="prod-name">
-                                <?php echo htmlspecialchars($row['product_Name']); ?>
+                                <?php echo htmlspecialchars($row['product_name']); ?>
                             </div>
 
                             <div class="prod-desc">

@@ -28,7 +28,7 @@ $stmt = mysqli_prepare($conn, "
         ROUND(AVG(r.rating_value), 2) AS Rating,
         pi.image_path
     FROM nps_products p
-    LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+    LEFT JOIN nps_ratings r ON p.product_id = r.product_id
     LEFT JOIN nps_product_images pi 
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     WHERE p.category_id = ?
@@ -442,7 +442,7 @@ if ($catResult) { while ($r = mysqli_fetch_assoc($catResult)) { $categoriess[] =
 
                             <div class="prod-img-wrap">
                                 <img
-                                    src="../../<?php echo !empty($row['image_path']) ? htmlspecialchars($row['image_path']) : 'assets/images/products/default.png'; ?>"
+                                    src="../../<?php echo !empty($row['image_path']) ? htmlspecialchars($row['image_path']) : 'assets/images/products/view.png'; ?>"
                                     alt="<?php echo htmlspecialchars($row['product_name']); ?>"
                                 >
                             </div>

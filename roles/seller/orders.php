@@ -13,12 +13,17 @@ $firstName  = $sellerName ? explode(' ', $sellerName)[0] : 'Seller';
    FILTERS
 ========================= */
 $statusFilter = trim($_GET['status'] ?? '');
+$orderNumber  = trim($_GET['order_number'] ?? '');
 $startDate    = trim($_GET['start_date'] ?? '');
 $endDate      = trim($_GET['end_date'] ?? '');
 
 $validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 if (!in_array($statusFilter, $validStatuses, true)) {
     $statusFilter = '';
+}
+
+if ($orderNumber !== '' && (!ctype_digit($orderNumber) || (int)$orderNumber <= 0)) {
+    $orderNumber = '';
 }
 
 /* =========================
@@ -51,6 +56,12 @@ if ($statusFilter !== '') {
     $sql .= " AND o.order_status = ? ";
     $params[] = $statusFilter;
     $types .= "s";
+}
+
+if ($orderNumber !== '') {
+    $sql .= " AND o.order_id = ? ";
+    $params[] = (int)$orderNumber;
+    $types .= "i";
 }
 
 if ($startDate !== '') {
@@ -326,6 +337,7 @@ function statusBadgeClass($status)
         }
 
         .filter-group select,
+        .filter-group input[type="number"],
         .filter-group input[type="date"] {
             height: 44px;
             border: 1px solid #d9d9d9;
@@ -548,12 +560,6 @@ function statusBadgeClass($status)
                     </a>
                 </li>
                 <li>
-                    <a href="settings.php">
-                        <img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img">
-                        <span>Settings</span>
-                    </a>
-                </li>
-                <li>
                     <a href="help_center.php">
                         <img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img">
                         <span>Help Center</span>
@@ -605,6 +611,18 @@ function statusBadgeClass($status)
                             <option value="delivered" <?php echo ($statusFilter === 'delivered') ? 'selected' : ''; ?>>Delivered</option>
                             <option value="cancelled" <?php echo ($statusFilter === 'cancelled') ? 'selected' : ''; ?>>Cancelled</option>
                         </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="order_number">Order Number</label>
+                        <input
+                            type="number"
+                            name="order_number"
+                            id="order_number"
+                            min="1"
+                            placeholder="Example: 12"
+                            value="<?php echo htmlspecialchars($orderNumber); ?>"
+                        >
                     </div>
 
                     <div class="filter-group">

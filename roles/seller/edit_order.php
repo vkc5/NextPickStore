@@ -18,6 +18,7 @@ if ($orderId <= 0) {
 
 $successMessage = '';
 $errorMessage   = '';
+$canUpdateOrderStatus = false;
 
 /* =========================
    LOAD ORDER
@@ -55,6 +56,26 @@ if (!$order) {
 }
 
 /* =========================
+   STATUS UPDATE LIMIT
+   Seller can update order status only if every order item belongs to this seller.
+========================= */
+$ownershipSql = "
+    SELECT COUNT(*) AS other_seller_items
+    FROM nps_order_items oi
+    INNER JOIN nps_products p ON oi.product_id = p.product_id
+    WHERE oi.order_id = ?
+      AND p.seller_id <> ?
+";
+$ownershipStmt = mysqli_prepare($conn, $ownershipSql);
+mysqli_stmt_bind_param($ownershipStmt, "ii", $orderId, $sellerId);
+mysqli_stmt_execute($ownershipStmt);
+$ownershipResult = mysqli_stmt_get_result($ownershipStmt);
+$ownershipRow = mysqli_fetch_assoc($ownershipResult);
+mysqli_stmt_close($ownershipStmt);
+
+$canUpdateOrderStatus = ((int)($ownershipRow['other_seller_items'] ?? 0) === 0);
+
+/* =========================
    HANDLE UPDATE
 ========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -63,12 +84,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!in_array($newStatus, $allowedStatuses, true)) {
         $errorMessage = 'Invalid order status.';
+    } elseif (!$canUpdateOrderStatus) {
+        $errorMessage = 'This order contains products from another seller, so you cannot update the full order status.';
     } else {
-        $updateSql = "UPDATE nps_orders SET order_status = ? WHERE order_id = ?";
+        $updateSql = "
+            UPDATE nps_orders
+            SET order_status = ?
+            WHERE order_id = ?
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM nps_order_items oi
+                  INNER JOIN nps_products p ON oi.product_id = p.product_id
+                  WHERE oi.order_id = nps_orders.order_id
+                    AND p.seller_id <> ?
+              )
+        ";
         $updateStmt = mysqli_prepare($conn, $updateSql);
-        mysqli_stmt_bind_param($updateStmt, "si", $newStatus, $orderId);
+        mysqli_stmt_bind_param($updateStmt, "sii", $newStatus, $orderId, $sellerId);
 
-        if (mysqli_stmt_execute($updateStmt)) {
+        if (mysqli_stmt_execute($updateStmt) && mysqli_stmt_affected_rows($updateStmt) > 0) {
             $successMessage = 'Order status updated successfully.';
             $order['order_status'] = $newStatus;
         } else {
@@ -394,8 +428,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <li><a href="customer_data.php"><img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
 
     <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
-
-    <li><a href="settings.php"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
 
     <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
 

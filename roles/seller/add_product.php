@@ -99,8 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
                 $fileType = mime_content_type($_FILES['product_image']['tmp_name']);
+                $fileSize = (int)($_FILES['product_image']['size'] ?? 0);
 
-                if (!in_array($fileType, $allowedTypes)) {
+                if ($fileSize > 5 * 1024 * 1024) {
+                    $error = "Product saved, but image must be 5MB or smaller.";
+                } elseif (!in_array($fileType, $allowedTypes)) {
                     $error = "Product saved, but image type is invalid. Only JPG, PNG, and WEBP are allowed.";
                 } else {
                     if (move_uploaded_file($_FILES["product_image"]["tmp_name"], $targetFile)) {
@@ -706,7 +709,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </li>
 
     <li>
-        <a href="customer_Data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_Data.php' ? 'active' : '' ?>">
+        <a href="customer_data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_data.php' ? 'active' : '' ?>">
             <img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img">
             <span>Customer Data</span>
         </a>
@@ -716,13 +719,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="reports.php" class="<?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
             <img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img">
             <span>Analytics & Reports</span>
-        </a>
-    </li>
-
-    <li>
-        <a href="settings.php" class="<?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img">
-            <span>Settings</span>
         </a>
     </li>
 
@@ -752,7 +748,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="message error"><?php echo htmlspecialchars($error); ?></div>
             <?php } ?>
 
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" id="sellerProductForm" novalidate>
                 <div class="form-layout">
                     <div>
                         <div class="card">
@@ -936,5 +932,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </footer>
 </div>
 
+<script>
+document.getElementById('sellerProductForm').addEventListener('submit', function (event) {
+    const requiredFields = ['product_name', 'category_id', 'price', 'stock_quantity', 'short_description', 'full_description'];
+    let valid = true;
+
+    requiredFields.forEach(function (name) {
+        const field = document.querySelector('[name="' + name + '"]');
+        if (!field || field.value.trim() === '') {
+            valid = false;
+            if (field) field.focus();
+        }
+    });
+
+    const price = document.querySelector('[name="price"]');
+    const stock = document.querySelector('[name="stock_quantity"]');
+    if (price && (price.value === '' || Number(price.value) < 0)) valid = false;
+    if (stock && (stock.value === '' || Number(stock.value) < 0)) valid = false;
+
+    if (!valid) {
+        event.preventDefault();
+        alert('Please fill all required product fields correctly.');
+    }
+});
+</script>
 </body>
 </html>

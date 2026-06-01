@@ -421,8 +421,6 @@ function statusBadgeClass($status)
 
     <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
 
-    <li><a href="settings.php"><img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img"><span>Settings</span></a></li>
-
     <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
 
     <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
@@ -511,7 +509,6 @@ function statusBadgeClass($status)
                 </div>
 
                 <div class="actions">
-                    <a href="edit_customer.php?id=<?php echo (int)$customer['user_id']; ?>" class="btn btn-primary">Edit Customer</a>
                     <a href="customer_data.php" class="btn btn-secondary">Back</a>
                 </div>
             </div>

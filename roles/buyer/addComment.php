@@ -75,7 +75,7 @@ if ($ratingValue >= 1 && $ratingValue <= 5) {
 
     $stmt = mysqli_prepare($conn, "
         SELECT rating_id
-        FROM nps_Ratings
+        FROM nps_ratings
         WHERE product_id = ?
           AND user_id = ?
         LIMIT 1
@@ -92,7 +92,7 @@ if ($ratingValue >= 1 && $ratingValue <= 5) {
 
         if ($existingRating) {
             $stmt = mysqli_prepare($conn, "
-                UPDATE nps_Ratings
+                UPDATE nps_ratings
                 SET rating_value = ?
                 WHERE rating_id = ?
                   AND user_id = ?
@@ -112,7 +112,7 @@ if ($ratingValue >= 1 && $ratingValue <= 5) {
             }
         } else {
             $stmt = mysqli_prepare($conn, "
-                INSERT INTO nps_Ratings
+                INSERT INTO nps_ratings
                 (product_id, user_id, rating_value, created_at)
                 VALUES (?, ?, ?, NOW())
             ");

@@ -13,7 +13,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/default.png";
+    return "../../assets/images/products/view.png";
 }
 
 function categoryIcon($categoryName)
@@ -54,20 +54,20 @@ if ($isSearching) {
     $searchSql = "
         SELECT 
             p.product_id, 
-            p.product_Name, 
+            p.product_name,
             p.short_description, 
             p.price,
             ROUND(AVG(r.rating_value), 2) AS Rating, 
             pi.image_path
         FROM nps_products p
-        LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+        LEFT JOIN nps_ratings r ON p.product_id = r.product_id
         LEFT JOIN nps_product_images pi 
             ON p.product_id = pi.product_id AND pi.is_primary = 1
         LEFT JOIN nps_categories c 
             ON p.category_id = c.category_id
         WHERE p.publish_status = 'published'
           AND (
-                p.product_Name LIKE ? 
+                p.product_name LIKE ?
                 OR p.short_description LIKE ? 
                 OR c.category_name LIKE ?
           )
@@ -95,13 +95,13 @@ if ($isSearching) {
 $new = mysqli_query($conn, "
     SELECT 
         p.product_id, 
-        p.product_Name, 
+        p.product_name,
         p.short_description, 
         p.price,
         ROUND(AVG(r.rating_value),2) AS Rating, 
         pi.image_path
     FROM nps_products p
-    LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+    LEFT JOIN nps_ratings r ON p.product_id = r.product_id
     LEFT JOIN nps_product_images pi 
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     WHERE p.publish_status = 'published'
@@ -141,14 +141,14 @@ if ($categoryResult) {
 $bestSeller = mysqli_query($conn, "
     SELECT 
         p.product_id, 
-        p.product_Name, 
+        p.product_name,
         p.short_description, 
         p.price,
         ROUND(AVG(r.rating_value),2) AS Rating, 
         pi.image_path, 
         SUM(o.quantity) AS total
     FROM nps_products p
-    LEFT JOIN nps_Ratings r ON p.product_id = r.product_id
+    LEFT JOIN nps_ratings r ON p.product_id = r.product_id
     LEFT JOIN nps_product_images pi 
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     INNER JOIN nps_order_items o ON p.product_id = o.product_id
@@ -1199,13 +1199,13 @@ $bestSeller = mysqli_query($conn, "
                                     <div class="prod-img-wrap">
                                         <img 
                                             src="<?php echo productImagePath($row['image_path']); ?>"
-                                            alt="<?php echo htmlspecialchars($row['product_Name']); ?>"
-                                            onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                                            alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                                            onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
                                         >
                                     </div>
 
                                     <div class="prod-name">
-                                        <?php echo htmlspecialchars($row['product_Name']); ?>
+                                        <?php echo htmlspecialchars($row['product_name']); ?>
                                     </div>
 
                                     <div class="prod-footer">
@@ -1266,13 +1266,13 @@ $bestSeller = mysqli_query($conn, "
                                     <div class="prod-img-wrap">
                                         <img 
                                             src="<?php echo productImagePath($row['image_path']); ?>"
-                                            alt="<?php echo htmlspecialchars($row['product_Name']); ?>"
-                                            onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                                            alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                                            onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
                                         >
                                     </div>
 
                                     <div class="prod-name">
-                                        <?php echo htmlspecialchars($row['product_Name']); ?>
+                                        <?php echo htmlspecialchars($row['product_name']); ?>
                                     </div>
 
                                     <div class="prod-footer">
@@ -1451,13 +1451,13 @@ $bestSeller = mysqli_query($conn, "
                                     <div class="prod-img-wrap">
                                         <img 
                                             src="<?php echo productImagePath($r['image_path']); ?>"
-                                            alt="<?php echo htmlspecialchars($r['product_Name']); ?>"
-                                            onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                                            alt="<?php echo htmlspecialchars($r['product_name']); ?>"
+                                            onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
                                         >
                                     </div>
 
                                     <div class="prod-name">
-                                        <?php echo htmlspecialchars($r['product_Name']); ?>
+                                        <?php echo htmlspecialchars($r['product_name']); ?>
                                     </div>
 
                                     <div class="prod-footer">

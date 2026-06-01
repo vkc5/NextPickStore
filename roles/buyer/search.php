@@ -1,5 +1,8 @@
 <?php
+include_once '../../includes/auth_guard.php';
 include_once '../../includes/config.php';
+
+requireRole(['Buyer']);
 
 class Search
 {
@@ -43,7 +46,7 @@ class Search
                 MATCH(p.product_name, p.short_description, p.full_description)
                     AGAINST (? IN BOOLEAN MODE) AS relevance
             FROM nps_products p
-            LEFT JOIN nps_Ratings r 
+            LEFT JOIN nps_ratings r
                 ON p.product_id = r.product_id
             LEFT JOIN nps_product_images pi 
                 ON p.product_id = pi.product_id AND pi.is_primary = 1
@@ -156,7 +159,7 @@ class Search
             $rating = !empty($row['Rating']) ? htmlspecialchars($row['Rating']) : '0.00';
             $imagePath = !empty($row['image_path'])
                 ? '../../' . htmlspecialchars($row['image_path'])
-                : '../../assets/images/products/default.png';
+                : '../../assets/images/products/view.png';
 
             echo '
                 <a href="productDetails.php?id=' . $productId . '">

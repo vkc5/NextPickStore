@@ -1,7 +1,6 @@
 <?php
+include_once '../../includes/auth_guard.php';
+requireRole(['Buyer']);
 
-/* 
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Scripting/EmptyPHP.php to edit this template
- */
-
+header('Location: /NextPickStore/roles/buyer/reviews.php');
+exit;

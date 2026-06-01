@@ -81,7 +81,7 @@ mysqli_stmt_close($stmt);
 $products = [];
 $sql = "
     SELECT 
-        p.product_id, p.product_name, p.brand, c.category_name,
+        p.product_id, p.product_name, p.brand, c.category_name, p.publish_status,
         p.price, p.stock_quantity, pi.image_path
     FROM nps_products p
     INNER JOIN nps_categories c ON p.category_id = c.category_id
@@ -233,15 +233,93 @@ mysqli_stmt_close($stmt);
         .in-stock { background: #e7faed; color: #1b8a46; }
         .low-stock { background: #fff5d6; color: #9c6b00; }
         .out-stock { background: #ffe8e8; color: #b42318; }
+        .publish-badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: capitalize; }
+        .publish-published { background: #e7faed; color: #1b8a46; }
+        .publish-draft { background: #eef2ff; color: #3158ff; }
+        .publish-hidden { background: #ffe8e8; color: #b42318; }
 
         .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
         .table-btn { padding: 7px 12px; border-radius: 9px; font-size: 12px; font-weight: 600; border: 1px solid #3158ff; background: #fff; color: #3158ff; cursor: pointer; }
-        .table-btn.delete { border-color: #d82121; color: #d82121; }
+        .table-btn.hide { border-color: #d82121; color: #d82121; }
+        .table-btn.disabled { border-color: #d9d9df; color: #8a8f98; cursor: not-allowed; background: #f5f5f5; }
         .empty-box { padding: 30px 10px; text-align: center; color: #666; font-size: 14px; }
 
         .flash-message { padding: 12px 14px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; }
         .flash-message.success { background: #e7faed; color: #1b8a46; border: 1px solid #b5eac7; }
         .flash-message.error { background: #ffe8e8; color: #b42318; border: 1px solid #f5b5b5; }
+
+        .hide-form { display: inline; }
+        .hide-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.58);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 18px;
+        }
+        .hide-modal-overlay.show { display: flex; }
+        .hide-modal {
+            width: min(420px, 100%);
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+            animation: modalPop 0.22s ease;
+        }
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .hide-modal-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #ffe8e8;
+            color: #d82121;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 auto 16px;
+        }
+        .hide-modal h3 {
+            font-size: 22px;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+        .hide-modal p {
+            color: #667085;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+        .hide-modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .modal-cancel-btn,
+        .modal-hide-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .modal-cancel-btn {
+            background: #eef2ff;
+            color: #3158ff;
+        }
+        .modal-hide-btn {
+            background: #d82121;
+            color: #fff;
+        }
 
         .footer { border-top: 1px solid #ececec; background: #fff; margin-top: 24px; }
 .footer-top {
@@ -318,7 +396,7 @@ mysqli_stmt_close($stmt);
     </li>
 
     <li>
-        <a href="customer_Data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_Data.php' ? 'active' : '' ?>">
+        <a href="customer_data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_data.php' ? 'active' : '' ?>">
             <img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img">
             <span>Customer Data</span>
         </a>
@@ -328,13 +406,6 @@ mysqli_stmt_close($stmt);
         <a href="reports.php" class="<?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
             <img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img">
             <span>Analytics & Reports</span>
-        </a>
-    </li>
-
-    <li>
-        <a href="settings.php" class="<?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img">
-            <span>Settings</span>
         </a>
     </li>
 
@@ -360,18 +431,18 @@ mysqli_stmt_close($stmt);
                 <p>Track your products, stock levels, and manage your product list.</p>
             </div>
 
-            <?php if (isset($_GET['deleted']) || isset($_GET['error'])): ?>
-                <?php if (isset($_GET['deleted'])): ?>
-                    <div class="flash-message success">Product deleted successfully.</div>
+            <?php if (isset($_GET['hidden']) || isset($_GET['error'])): ?>
+                <?php if (isset($_GET['hidden'])): ?>
+                    <div class="flash-message success">Product hidden successfully.</div>
                 <?php endif; ?>
                 <?php if (isset($_GET['error']) && $_GET['error'] === 'linked_orders'): ?>
-                    <div class="flash-message error">This product cannot be deleted because it is linked to existing orders.</div>
+                    <div class="flash-message error">This product cannot be hidden because it is linked to existing orders.</div>
                 <?php endif; ?>
                 <?php if (isset($_GET['error']) && $_GET['error'] === 'notfound'): ?>
                     <div class="flash-message error">Product not found.</div>
                 <?php endif; ?>
-                <?php if (isset($_GET['error']) && $_GET['error'] === 'delete_failed'): ?>
-                    <div class="flash-message error">Failed to delete product.</div>
+                <?php if (isset($_GET['error']) && $_GET['error'] === 'hide_failed'): ?>
+                    <div class="flash-message error">Failed to hide product.</div>
                 <?php endif; ?>
                 <script>
                     setTimeout(function () {
@@ -446,6 +517,7 @@ mysqli_stmt_close($stmt);
                                 <th>Stock Quantity</th>
                                 <th>Low Stock Threshold</th>
                                 <th>Status</th>
+                                <th>Publish Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -460,7 +532,7 @@ mysqli_stmt_close($stmt);
                                     ?>
                                     <tr>
                                         <td>
-                                            <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/default.png'; ?>" alt="Product" class="thumb">
+                                            <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/view.png'; ?>" alt="Product" class="thumb">
                                         </td>
                                         <td class="product-name"><?php echo htmlspecialchars($product['product_name']); ?></td>
                                         <td class="sku-text"><?php echo htmlspecialchars($product['brand'] ?: '-'); ?></td>
@@ -469,16 +541,24 @@ mysqli_stmt_close($stmt);
                                         <td><?php echo $stockQty; ?></td>
                                         <td>10</td>
                                         <td><span class="status-badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span></td>
+                                        <td><span class="publish-badge publish-<?php echo htmlspecialchars($product['publish_status']); ?>"><?php echo htmlspecialchars($product['publish_status']); ?></span></td>
                                         <td>
                                             <div class="action-buttons">
                                                 <a href="edit_product.php?id=<?php echo $product['product_id']; ?>" class="table-btn">Edit</a>
-                                                <a href="delete_product.php?id=<?php echo $product['product_id']; ?>" class="table-btn delete" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
+                                                <?php if ($product['publish_status'] === 'hidden'): ?>
+                                                    <button type="button" class="table-btn disabled" disabled>Hidden</button>
+                                                <?php else: ?>
+                                                    <form class="hide-form" action="delete_product.php" method="GET">
+                                                        <input type="hidden" name="id" value="<?php echo (int)$product['product_id']; ?>">
+                                                        <button type="button" class="table-btn hide" onclick="openHideModal(this.closest('form'))">Hide</button>
+                                                    </form>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>
                                 <?php } ?>
                             <?php } else { ?>
-                                <tr><td colspan="9"><div class="empty-box">No products found for the selected filters.</div></td></tr>
+                                <tr><td colspan="10"><div class="empty-box">No products found for the selected filters.</div></td></tr>
                             <?php } ?>
                         </tbody>
                     </table>
@@ -532,6 +612,52 @@ mysqli_stmt_close($stmt);
         </div>
     </footer>
 
+    <div class="hide-modal-overlay" id="hideModalOverlay">
+        <div class="hide-modal">
+            <div class="hide-modal-icon">!</div>
+            <h3>Hide product</h3>
+            <p>
+                This will hide the product from buyers without deleting it from the database.
+                You can publish it again later from the edit product page.
+            </p>
+            <div class="hide-modal-actions">
+                <button type="button" class="modal-cancel-btn" onclick="closeHideModal()">Cancel</button>
+                <button type="button" class="modal-hide-btn" id="confirmHideBtn">Hide</button>
+            </div>
+        </div>
+    </div>
+
 </div>
+<script>
+    let formToHide = null;
+
+    function openHideModal(form) {
+        formToHide = form;
+        document.getElementById('hideModalOverlay').classList.add('show');
+    }
+
+    function closeHideModal() {
+        formToHide = null;
+        document.getElementById('hideModalOverlay').classList.remove('show');
+    }
+
+    document.getElementById('confirmHideBtn').addEventListener('click', function () {
+        if (formToHide) {
+            formToHide.submit();
+        }
+    });
+
+    document.getElementById('hideModalOverlay').addEventListener('click', function (event) {
+        if (event.target === this) {
+            closeHideModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeHideModal();
+        }
+    });
+</script>
 </body>
 </html>

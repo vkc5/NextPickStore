@@ -474,7 +474,7 @@ if ($catResult) {
                         <div class="message-box error-box"><?php echo htmlspecialchars($error); ?></div>
                     <?php endif; ?>
 
-                    <form action="process_edit_product.php" method="POST" class="edit-layout" enctype="multipart/form-data">
+                    <form action="process_edit_product.php" method="POST" class="edit-layout" enctype="multipart/form-data" id="adminProductForm" novalidate>
                         <div class="card-box">
                             <h3>Basic Information</h3>
                             <div class="sub-text">Provide the basic details about your product.</div>
@@ -608,5 +608,29 @@ if ($catResult) {
                 </div>
             </footer>
         </div>
+        <script>
+            document.getElementById('adminProductForm').addEventListener('submit', function (event) {
+                const requiredFields = ['product_name', 'short_description', 'full_description', 'price', 'category_id', 'stock_quantity', 'publish_status'];
+                let valid = true;
+
+                requiredFields.forEach(function (name) {
+                    const field = document.querySelector('[name="' + name + '"]');
+                    if (!field || field.value.trim() === '') {
+                        valid = false;
+                        if (field) field.focus();
+                    }
+                });
+
+                const price = document.querySelector('[name="price"]');
+                const stock = document.querySelector('[name="stock_quantity"]');
+                if (price && (price.value === '' || Number(price.value) < 0)) valid = false;
+                if (stock && (stock.value === '' || Number(stock.value) < 0)) valid = false;
+
+                if (!valid) {
+                    event.preventDefault();
+                    alert('Please fill all required product fields correctly.');
+                }
+            });
+        </script>
     </body>
 </html>

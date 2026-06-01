@@ -445,7 +445,7 @@ $roleName = $user['role_name'];
                             <div class="success-box"><?php echo htmlspecialchars($success); ?></div>
                         <?php endif; ?>
 
-                        <form action="process_update_user.php" method="POST">
+                        <form action="process_update_user.php" method="POST" id="adminUserForm" novalidate>
                             <input type="hidden" name="user_id" value="<?php echo (int) $user['user_id']; ?>">
 
                             <div class="form-grid">
@@ -567,5 +567,22 @@ $roleName = $user['role_name'];
                 </div>
             </footer>
         </div>
+        <script>
+            document.getElementById('adminUserForm').addEventListener('submit', function (event) {
+                const email = document.querySelector('[name="email"]');
+                const password = document.querySelector('[name="password"]');
+                const fullName = document.querySelector('[name="full_name"]');
+                let valid = true;
+
+                if (!fullName || fullName.value.trim() === '') valid = false;
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) valid = false;
+                if (password && password.value !== '' && password.value.length < 8) valid = false;
+
+                if (!valid) {
+                    event.preventDefault();
+                    alert('Please fill all required user fields correctly.');
+                }
+            });
+        </script>
     </body>
 </html>

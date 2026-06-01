@@ -11,12 +11,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $conn = getConnection();
+$adminId = (int)($_SESSION['user_id'] ?? 0);
 
 $commentId = (int)($_POST['comment_id'] ?? 0);
 $productId = (int)($_POST['product_id'] ?? 0);
 
 if ($commentId <= 0 || $productId <= 0) {
     die('Invalid request.');
+}
+
+if ($adminId > 0) {
+    $adminStmt = mysqli_prepare($conn, "SET @current_admin_id = ?");
+    mysqli_stmt_bind_param($adminStmt, "i", $adminId);
+    mysqli_stmt_execute($adminStmt);
+    mysqli_stmt_close($adminStmt);
 }
 
 $sql = "DELETE FROM nps_comments WHERE comment_id = ? LIMIT 1";

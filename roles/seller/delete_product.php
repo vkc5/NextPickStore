@@ -40,44 +40,25 @@ if (!$row = mysqli_fetch_assoc($result)) {
 mysqli_stmt_close($stmt);
 
 /* =========================
-   CHECK IF PRODUCT EXISTS IN ORDERS
+   HIDE PRODUCT INSTEAD OF DELETING
 ========================= */
-$orderCheckSql = "
-    SELECT COUNT(*) AS total
-    FROM nps_order_items
-    WHERE product_id = ?
-";
-$stmt = mysqli_prepare($conn, $orderCheckSql);
-mysqli_stmt_bind_param($stmt, "i", $productId);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$orderRow = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
-
-if ((int)$orderRow['total'] > 0) {
-    header("Location: /NextPickStore/roles/seller/my_products.php?error=linked_orders");
-    exit();
-}
-
-/* =========================
-   DELETE PRODUCT
-   product_images/comments/ratings/views cascade automatically
-========================= */
-$deleteSql = "
-    DELETE FROM nps_products
+$hideSql = "
+    UPDATE nps_products
+    SET publish_status = 'hidden',
+        updated_at = NOW()
     WHERE product_id = ?
       AND seller_id = ?
 ";
-$stmt = mysqli_prepare($conn, $deleteSql);
+$stmt = mysqli_prepare($conn, $hideSql);
 mysqli_stmt_bind_param($stmt, "ii", $productId, $sellerId);
 
 if (mysqli_stmt_execute($stmt)) {
     mysqli_stmt_close($stmt);
-    header("Location: /NextPickStore/roles/seller/my_products.php?deleted=1");
+    header("Location: /NextPickStore/roles/seller/my_products.php?hidden=1");
     exit();
 } else {
     mysqli_stmt_close($stmt);
-    header("Location: /NextPickStore/roles/seller/my_products.php?error=delete_failed");
+    header("Location: /NextPickStore/roles/seller/my_products.php?error=hide_failed");
     exit();
 }
 ?>

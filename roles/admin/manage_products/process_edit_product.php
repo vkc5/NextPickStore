@@ -97,11 +97,27 @@ if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] !== UPL
 
     $originalName = $_FILES['product_image']['name'];
     $tmpName = $_FILES['product_image']['tmp_name'];
+    $fileSize = (int)($_FILES['product_image']['size'] ?? 0);
 
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
+    if ($fileSize > 5 * 1024 * 1024) {
+        $_SESSION['product_edit_error'] = 'Product updated, but image must be 5MB or smaller.';
+        header('Location: /NextPickStore/roles/admin/manage_products/edit_product.php?id=' . $productId);
+        exit;
+    }
+
     if (!in_array($extension, $allowedExtensions, true)) {
         $_SESSION['product_edit_error'] = 'Product updated, but image type is not allowed.';
+        header('Location: /NextPickStore/roles/admin/manage_products/edit_product.php?id=' . $productId);
+        exit;
+    }
+
+    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    $mimeType = mime_content_type($tmpName);
+
+    if (!in_array($mimeType, $allowedMimeTypes, true)) {
+        $_SESSION['product_edit_error'] = 'Product updated, but image content is not allowed.';
         header('Location: /NextPickStore/roles/admin/manage_products/edit_product.php?id=' . $productId);
         exit;
     }

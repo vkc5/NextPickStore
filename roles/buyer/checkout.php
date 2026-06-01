@@ -15,7 +15,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/default.png";
+    return "../../assets/images/products/view.png";
 }
 
 /* =========================
@@ -99,7 +99,7 @@ function getCartItems($conn)
         $sql = "
             SELECT
                 p.product_id,
-                p.product_Name,
+                p.product_name,
                 p.short_description,
                 p.price,
                 p.stock_quantity,
@@ -295,11 +295,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     $productId = (int)$item['product_id'];
                     $quantity = (int)$item['quantity'];
                     $price = (float)$item['price'];
+                    $lineSubtotal = $price * $quantity;
 
                     $itemSql = "
                         INSERT INTO nps_order_items
-                        (order_id, product_id, quantity, `$priceColumn`)
-                        VALUES (?, ?, ?, ?)
+                        (order_id, product_id, quantity, `$priceColumn`, subtotal)
+                        VALUES (?, ?, ?, ?, ?)
                     ";
 
                     $stmt = mysqli_prepare($conn, $itemSql);
@@ -308,7 +309,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         throw new Exception(mysqli_error($conn));
                     }
 
-                    mysqli_stmt_bind_param($stmt, "iiid", $orderId, $productId, $quantity, $price);
+                    mysqli_stmt_bind_param($stmt, "iiidd", $orderId, $productId, $quantity, $price, $lineSubtotal);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_close($stmt);
 
@@ -1459,12 +1460,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                     <img 
                                         src="<?php echo $imagePath; ?>" 
                                         alt="Product image"
-                                        onerror="this.onerror=null; this.src='../../assets/images/products/default.png';"
+                                        onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
                                     >
                                 </div>
 
                                 <div class="order-info">
-                                    <h3><?php echo htmlspecialchars($item['product_Name']); ?></h3>
+                                    <h3><?php echo htmlspecialchars($item['product_name']); ?></h3>
                                     <p>Qty: <?php echo (int)$item['quantity']; ?></p>
                                 </div>
 

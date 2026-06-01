@@ -61,7 +61,7 @@ if ($commentId > 0 && $userId > 0) {
             c.user_id,
             c.comment_text,
             c.created_at,
-            p.product_Name
+            p.product_name
         FROM nps_comments c
         INNER JOIN nps_products p ON c.product_id = p.product_id
         WHERE c.comment_id = ?
@@ -714,7 +714,7 @@ $pageTitle = $comment ? 'Edit Comment' : 'Comment Not Found';
 
             <section class="edit-card">
                 <h2>
-                    <?php echo htmlspecialchars($comment['product_Name']); ?>
+                    <?php echo htmlspecialchars($comment['product_name']); ?>
                 </h2>
 
                 <p>

@@ -603,7 +603,7 @@ function customerStatusClass($status)
     </li>
 
     <li>
-        <a href="customer_Data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_Data.php' ? 'active' : '' ?>">
+        <a href="customer_data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_data.php' ? 'active' : '' ?>">
             <img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img">
             <span>Customer Data</span>
         </a>
@@ -613,13 +613,6 @@ function customerStatusClass($status)
         <a href="reports.php" class="<?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
             <img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img">
             <span>Analytics & Reports</span>
-        </a>
-    </li>
-
-    <li>
-        <a href="settings.php" class="<?= basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/settings.png" alt="" class="menu-icon-img">
-            <span>Settings</span>
         </a>
     </li>
 
@@ -675,7 +668,6 @@ function customerStatusClass($status)
                     <div class="filter-actions">
                         <button type="submit" class="btn btn-light">Search</button>
                         <a href="customer_data.php" class="btn btn-light">Reset</a>
-                        <a href="add_customer.php" class="btn btn-primary">Add New Customer</a>
                     </div>
                 </form>
 
@@ -690,7 +682,7 @@ function customerStatusClass($status)
                                 <th>Total Orders</th>
                                 <th>Last Purchased Date</th>
                                 <th>Account Status</th>
-                                <th>Actions</th>
+                                <th>View</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -720,11 +712,6 @@ function customerStatusClass($status)
                                         </td>
                                         <td>
                                             <div class="actions">
-                                                <a class="icon-btn" href="edit_customer.php?id=<?php echo (int)$customer['user_id']; ?>" title="Edit Customer">
-                                                    <svg fill="none" viewBox="0 0 24 24" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487a2.25 2.25 0 113.182 3.182L8.25 19.463 4 20l.537-4.25L16.862 4.487z"/>
-                                                    </svg>
-                                                </a>
                                                 <a class="icon-btn" href="customer_orders.php?id=<?php echo (int)$customer['user_id']; ?>" title="View Orders">
                                                     <svg fill="none" viewBox="0 0 24 24" stroke-width="2">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 8.25l7.89 5.26a2 2 0 002.22 0L21 8.25M5.25 19.5h13.5A2.25 2.25 0 0021 17.25v-10.5A2.25 2.25 0 0018.75 4.5H5.25A2.25 2.25 0 003 6.75v10.5A2.25 2.25 0 005.25 19.5z"/>
