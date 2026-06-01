@@ -173,23 +173,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
     $fullName = trim($_POST['full_name'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
-    $address = trim($_POST['address'] ?? '');
-    $paymentMethod = trim($_POST['payment_method'] ?? 'Cash on Delivery');
+    $house = trim($_POST['house'] ?? '');
+    $road = trim($_POST['road'] ?? '');
+    $block = trim($_POST['block'] ?? '');
+    $area = trim($_POST['area'] ?? '');
 
-    $allowedPaymentMethods = ['Cash on Delivery', 'Credit Card', 'BenefitPay'];
+    $paymentMethod = trim($_POST['payment_method'] ?? 'Cash on Delivery');
+    $paymentType = trim($_POST['payment_type'] ?? 'Visa');
+
+    // Fake payment fields for demo only. They are validated but not saved.
+    $cardNumber = preg_replace('/\D/', '', $_POST['card_number'] ?? '');
+    $expiryDate = trim($_POST['expiry_date'] ?? '');
+    $securityCode = trim($_POST['security_code'] ?? '');
+    $cardName = trim($_POST['card_name'] ?? '');
+    $walletPhone = preg_replace('/\D/', '', $_POST['wallet_phone'] ?? '');
+    $googleEmail = trim($_POST['google_email'] ?? '');
+
+    $allowedPaymentMethods = ['Cash on Delivery', 'Online Payment'];
+    $allowedPaymentTypes = ['Visa', 'Mastercard', 'Google Pay', 'BenefitPay'];
 
     if (!in_array($paymentMethod, $allowedPaymentMethods, true)) {
         $paymentMethod = 'Cash on Delivery';
     }
 
+    if ($paymentMethod === 'Online Payment') {
+        if (!in_array($paymentType, $allowedPaymentTypes, true)) {
+            $paymentType = 'Visa';
+        }
+
+        $paymentMethod = $paymentType;
+    }
+
     $shippingAddress = "Name: " . $fullName . "\n"
         . "Phone: " . $phone . "\n"
-        . "Address: " . $address;
+        . "House/Flat: " . $house . "\n"
+        . "Road: " . $road . "\n"
+        . "Block: " . $block . "\n"
+        . "Area/City: " . $area;
 
     if (empty($cartItems)) {
         $errorMessage = 'Your cart is empty. Please add products before placing an order.';
-    } elseif ($fullName === '' || $phone === '' || $address === '') {
-        $errorMessage = 'Please fill in your full name, phone number, and delivery address.';
+    } elseif ($fullName === '' || $phone === '' || $house === '' || $road === '' || $block === '' || $area === '') {
+        $errorMessage = 'Please fill in your full name, phone number, and full delivery address.';
+    } elseif (!preg_match('/^[A-Za-z\s]{3,}$/', $fullName)) {
+        $errorMessage = 'Full name must contain letters only.';
+    } elseif (!preg_match('/^[0-9]{8}$/', $phone)) {
+        $errorMessage = 'Phone number must be exactly 8 digits.';
+    } elseif (($paymentMethod === 'Visa' || $paymentMethod === 'Mastercard') && !preg_match('/^[0-9]{16}$/', $cardNumber)) {
+        $errorMessage = 'Card number must be exactly 16 digits.';
+    } elseif (($paymentMethod === 'Visa' || $paymentMethod === 'Mastercard') && !preg_match('/^(0[1-9]|1[0-2])\/\d{2}$/', $expiryDate)) {
+        $errorMessage = 'Expiry date must be in MM/YY format.';
+    } elseif (($paymentMethod === 'Visa' || $paymentMethod === 'Mastercard') && !preg_match('/^[0-9]{3}$/', $securityCode)) {
+        $errorMessage = 'Security code must be exactly 3 digits.';
+    } elseif (($paymentMethod === 'Visa' || $paymentMethod === 'Mastercard') && !preg_match('/^[A-Za-z\s]{3,}$/', $cardName)) {
+        $errorMessage = 'Name on card must contain letters only.';
+    } elseif ($paymentMethod === 'BenefitPay' && !preg_match('/^[0-9]{8}$/', $walletPhone)) {
+        $errorMessage = 'BenefitPay phone number must be exactly 8 digits.';
+    } elseif ($paymentMethod === 'Google Pay' && !preg_match('/^[0-9]{8}$/', $walletPhone)) {
+        $errorMessage = 'Google Pay phone number must be exactly 8 digits.';
+    } elseif ($paymentMethod === 'Google Pay' && !filter_var($googleEmail, FILTER_VALIDATE_EMAIL)) {
+        $errorMessage = 'Please enter a valid Google Pay email.';
     } else {
 
         $stockOk = true;
@@ -688,38 +731,148 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             box-shadow: 0 0 0 4px #eef3ff;
         }
 
-        .payment-options {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 12px;
+
+        .payment-section {
+            background: #ffffff;
+            border: 1px solid #ececec;
+            border-radius: 16px;
+            padding: 22px;
+            margin-top: 8px;
         }
 
-        .payment-option {
-            border: 1px solid #ececec;
-            border-radius: 14px;
-            padding: 14px;
-            background: #fff;
+        .payment-section h2 {
+            font-size: 22px;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .payment-subtitle {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .payment-card {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            gap: 14px;
+            border: 1px solid #d7d7d7;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            background: #fff;
             cursor: pointer;
-            min-height: 56px;
             transition: 0.2s ease;
         }
 
-        .payment-option:hover {
-            border-color: #cfd9ff;
-            background: #f8faff;
+        .payment-card:hover,
+        .payment-card.selected {
+            border-color: #3158ff;
+            box-shadow: 0 0 0 4px #eef3ff;
         }
 
-        .payment-option input {
+        .payment-card input[type="radio"] {
+            margin-top: 5px;
             accent-color: #1A4DE1;
         }
 
-        .payment-option span {
-            font-size: 13.5px;
-            font-weight: 700;
+        .payment-card-content {
+            width: 100%;
+        }
+
+        .payment-card-content h3 {
+            font-size: 17px;
             color: #111827;
+            margin-bottom: 14px;
+        }
+
+        .payment-description {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .payment-type-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .payment-type {
+            width: 82px;
+            height: 48px;
+            border: 1px solid #dddddd;
+            border-radius: 10px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s ease;
+            padding: 6px;
+        }
+
+        .payment-type:hover,
+        .payment-type.active {
+            border-color: #3158ff;
+            box-shadow: 0 0 0 4px #eef3ff;
+        }
+
+        .payment-type input {
+            display: none;
+        }
+
+        .payment-type img {
+            max-width: 100%;
+            max-height: 34px;
+            object-fit: contain;
+        }
+
+        .fake-card-form,
+        .fake-wallet-form {
+            margin-top: 8px;
+        }
+
+        .checkbox-row {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-top: 12px;
+        }
+
+        .checkbox-row input {
+            margin-right: 8px;
+            accent-color: #1A4DE1;
+        }
+
+        .fake-payment-note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 6px;
+        }
+
+        .field-error {
+            color: #d82121;
+            font-size: 12px;
+            font-weight: 700;
+            min-height: 14px;
+        }
+
+        .form-control.input-error {
+            border-color: #d82121;
+            box-shadow: 0 0 0 4px #fff1f1;
+        }
+
+        .field-error {
+            min-height: 14px;
+            color: #d82121;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .form-control.input-error {
+            border-color: #d82121;
+            box-shadow: 0 0 0 4px #fff1f1;
         }
 
         .order-item {
@@ -932,6 +1085,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             .buyer-search,
             .nav-actions {
                 width: 100%;
+                
             }
 
             .nav-actions {
@@ -1090,7 +1244,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                     type="text" 
                                     id="full_name" 
                                     name="full_name"
-                                    placeholder="Enter your full name"
+                                    pattern="[A-Za-z\s]{3,}"
+                                    title="Name should contain letters only"
                                     required
                                 >
                             </div>
@@ -1102,40 +1257,189 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                     type="text" 
                                     id="phone" 
                                     name="phone"
-                                    placeholder="Enter your phone number"
+                                    pattern="[0-9]{8}"
+                                    maxlength="8"
+                                    title="Phone number must be 8 digits"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="house">House / Flat Number</label>
+                                <input 
+                                    class="form-control"
+                                    type="text" 
+                                    id="house" 
+                                    name="house"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="road">Road Number</label>
+                                <input 
+                                    class="form-control"
+                                    type="text" 
+                                    id="road" 
+                                    name="road"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="block">Block Number</label>
+                                <input 
+                                    class="form-control"
+                                    type="text" 
+                                    id="block" 
+                                    name="block"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="area">Area / City</label>
+                                <input 
+                                    class="form-control"
+                                    type="text" 
+                                    id="area" 
+                                    name="area"
                                     required
                                 >
                             </div>
 
                             <div class="form-group full-row">
-                                <label for="address">Delivery Address</label>
-                                <textarea 
-                                    class="form-control"
-                                    id="address" 
-                                    name="address"
-                                    placeholder="Enter your delivery address"
-                                    required
-                                ></textarea>
-                            </div>
+                                <div class="payment-section">
+                                    <h2>Payment Method</h2>
+                                    <p class="payment-subtitle">Choose how you want to pay</p>
 
-                            <div class="form-group full-row">
-                                <label>Payment Method</label>
+                                    <label class="payment-card selected">
+                                        <input type="radio" name="payment_method" value="Online Payment" checked>
 
-                                <div class="payment-options">
-                                    <label class="payment-option">
-                                        <input type="radio" name="payment_method" value="Cash on Delivery" checked>
-                                        <span>Cash on Delivery</span>
+                                        <div class="payment-card-content">
+                                            <h3>Card / Digital Payment</h3>
+
+                                           <div class="payment-type-options">
+    <label class="payment-type active">
+        <input type="radio" name="payment_type" value="Visa" checked>
+        <img src="../../assets/images/payment/visa.png" alt="Visa">
+    </label>
+
+    <label class="payment-type">
+        <input type="radio" name="payment_type" value="Mastercard">
+        <img src="../../assets/images/payment/mastercard.png" alt="Mastercard">
+    </label>
+
+    <label class="payment-type">
+        <input type="radio" name="payment_type" value="Google Pay">
+        <img src="../../assets/images/payment/googlepay.png" alt="Google Pay">
+    </label>
+
+    <label class="payment-type">
+        <input type="radio" name="payment_type" value="BenefitPay">
+        <img src="../../assets/images/payment/benefitpay.png" alt="BenefitPay">
+    </label>
+</div>
+
+                                            <div class="fake-card-form" id="cardFields">
+                                                <div class="form-group full-row">
+                                                    <label for="card_number">Card Number</label>
+                                                    <input 
+                                                        class="form-control"
+                                                        type="text"
+                                                        id="card_number"
+                                                        name="card_number"
+                                                        placeholder="1234 5678 9012 3456"
+                                                        maxlength="19"
+                                                    >
+                                                    <small class="field-error" id="cardNumberError"></small>
+                                                </div>
+
+                                                <div class="form-grid">
+                                                    <div class="form-group">
+                                                        <label for="expiry_date">Expiry Date</label>
+                                                        <input 
+                                                            class="form-control"
+                                                            type="text"
+                                                            id="expiry_date"
+                                                            name="expiry_date"
+                                                            placeholder="MM/YY"
+                                                            maxlength="5"
+                                                        >
+                                                        <small class="field-error" id="expiryError"></small>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label for="security_code">Security Code</label>
+                                                        <input 
+                                                            class="form-control"
+                                                            type="text"
+                                                            id="security_code"
+                                                            name="security_code"
+                                                            placeholder="3 digits"
+                                                            maxlength="3"
+                                                        >
+                                                        <small class="field-error" id="securityError"></small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group full-row">
+                                                    <label for="card_name">Name on Card</label>
+                                                    <input 
+                                                        class="form-control"
+                                                        type="text"
+                                                        id="card_name"
+                                                        name="card_name"
+                                                       
+                                                    >
+                                                    <small class="field-error" id="cardNameError"></small>
+                                                </div>
+                                            </div>
+
+                                            <div class="fake-wallet-form" id="walletFields" style="display:none;">
+                                                <div class="form-group full-row">
+                                                    <label for="wallet_phone">Wallet Phone Number</label>
+                                                    <input 
+                                                        class="form-control"
+                                                        type="text"
+                                                        id="wallet_phone"
+                                                        name="wallet_phone"
+                                                        placeholder="Example: 34117717"
+                                                        maxlength="8"
+                                                    >
+                                                    <small class="field-error" id="walletPhoneError"></small>
+                                                </div>
+
+                                                <div class="form-group full-row" id="googleEmailBox" style="display:none;">
+                                                    <label for="google_email">Google Pay Email</label>
+                                                    <input 
+                                                        class="form-control"
+                                                        type="email"
+                                                        id="google_email"
+                                                        name="google_email"
+                                                        placeholder="Example: user@gmail.com"
+                                                    >
+                                                    <small class="field-error" id="googleEmailError"></small>
+                                                </div>
+                                            </div>
+
+                                            <label class="checkbox-row">
+                                                <input type="checkbox" checked>
+                                                Billing address is the same as delivery address
+                                            </label>
+                                        </div>
                                     </label>
 
-                                    <label class="payment-option">
-                                        <input type="radio" name="payment_method" value="Credit Card">
-                                        <span>Credit Card</span>
+                                    <label class="payment-card">
+                                        <input type="radio" name="payment_method" value="Cash on Delivery">
+
+                                        <div class="payment-card-content">
+                                            <h3>Cash on Delivery</h3>
+                                            <p class="payment-description">Pay when your order arrives.</p>
+                                        </div>
                                     </label>
 
-                                    <label class="payment-option">
-                                        <input type="radio" name="payment_method" value="BenefitPay">
-                                        <span>BenefitPay</span>
-                                    </label>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -1269,6 +1573,345 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     </footer>
 
 </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+    const paymentCards = document.querySelectorAll('.payment-card');
+    const fakeCardForm = document.getElementById('fakeCardForm');
+
+    const cardNumber = document.getElementById('card_number');
+    const expiryDate = document.getElementById('expiry_date');
+    const securityCode = document.getElementById('security_code');
+    const cardName = document.getElementById('card_name');
+
+    const cardNumberError = document.getElementById('cardNumberError');
+    const expiryError = document.getElementById('expiryError');
+    const securityError = document.getElementById('securityError');
+    const nameError = document.getElementById('nameError');
+
+    const checkoutForm = document.querySelector('form[method="POST"]');
+
+    function isCreditCardSelected() {
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        return selected && selected.value === 'Credit Card';
+    }
+
+    function clearCardErrors() {
+        if (!cardNumber || !expiryDate || !securityCode || !cardName) return;
+
+        cardNumberError.textContent = '';
+        expiryError.textContent = '';
+        securityError.textContent = '';
+        nameError.textContent = '';
+
+        cardNumber.classList.remove('input-error');
+        expiryDate.classList.remove('input-error');
+        securityCode.classList.remove('input-error');
+        cardName.classList.remove('input-error');
+    }
+
+    function updatePaymentView() {
+        paymentCards.forEach(card => card.classList.remove('selected'));
+
+        paymentRadios.forEach(radio => {
+            if (radio.checked) {
+                radio.closest('.payment-card').classList.add('selected');
+            }
+        });
+
+        if (fakeCardForm) {
+            if (isCreditCardSelected()) {
+                fakeCardForm.style.display = 'block';
+            } else {
+                fakeCardForm.style.display = 'none';
+                clearCardErrors();
+            }
+        }
+    }
+
+    function showError(input, errorElement, message) {
+        input.classList.add('input-error');
+        errorElement.textContent = message;
+    }
+
+    function validateCardFields() {
+        clearCardErrors();
+
+        let valid = true;
+        const cleanCardNumber = cardNumber.value.replace(/\s/g, '');
+        const expiryPattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+        const securityPattern = /^\d{3}$/;
+
+        if (!/^\d{16}$/.test(cleanCardNumber)) {
+            showError(cardNumber, cardNumberError, 'Card number must be 16 digits.');
+            valid = false;
+        }
+
+        if (!expiryPattern.test(expiryDate.value.trim())) {
+            showError(expiryDate, expiryError, 'Use MM/YY format.');
+            valid = false;
+        }
+
+        if (!securityPattern.test(securityCode.value.trim())) {
+            showError(securityCode, securityError, 'Security code must be 3 digits.');
+            valid = false;
+        }
+
+        if (cardName.value.trim().length < 3) {
+            showError(cardName, nameError, 'Name on card is required.');
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    if (cardNumber) {
+        cardNumber.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = value.replace(/(.{4})/g, '$1 ').trim();
+        });
+    }
+
+    if (expiryDate) {
+        expiryDate.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '').substring(0, 4);
+
+            if (value.length >= 3) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+
+            this.value = value;
+        });
+    }
+
+    if (securityCode) {
+        securityCode.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').substring(0, 3);
+        });
+    }
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentView);
+    });
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function (event) {
+            if (isCreditCardSelected() && !validateCardFields()) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    updatePaymentView();
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
+    const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
+    const paymentCards = document.querySelectorAll('.payment-card');
+    const paymentTypes = document.querySelectorAll('.payment-type');
+
+    const cardFields = document.getElementById('cardFields');
+    const walletFields = document.getElementById('walletFields');
+    const googleEmailBox = document.getElementById('googleEmailBox');
+
+    const cardNumber = document.getElementById('card_number');
+    const expiryDate = document.getElementById('expiry_date');
+    const securityCode = document.getElementById('security_code');
+    const cardName = document.getElementById('card_name');
+    const walletPhone = document.getElementById('wallet_phone');
+    const googleEmail = document.getElementById('google_email');
+
+    const checkoutForm = document.querySelector('form[method="POST"]');
+
+    function selectedPaymentMethod() {
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        return selected ? selected.value : '';
+    }
+
+    function selectedPaymentType() {
+        const selected = document.querySelector('input[name="payment_type"]:checked');
+        return selected ? selected.value : '';
+    }
+
+    function setError(input, message) {
+        if (!input) return;
+        let error = input.parentElement.querySelector('.field-error');
+        input.classList.add('input-error');
+
+        if (error) {
+            error.textContent = message;
+        }
+    }
+
+    function clearErrors() {
+        document.querySelectorAll('.field-error').forEach(error => error.textContent = '');
+        document.querySelectorAll('.input-error').forEach(input => input.classList.remove('input-error'));
+    }
+
+    function updatePaymentView() {
+        paymentCards.forEach(card => card.classList.remove('selected'));
+
+        paymentMethodRadios.forEach(radio => {
+            if (radio.checked) {
+                radio.closest('.payment-card').classList.add('selected');
+            }
+        });
+
+        paymentTypes.forEach(type => type.classList.remove('active'));
+
+        paymentTypeRadios.forEach(radio => {
+            if (radio.checked) {
+                radio.closest('.payment-type').classList.add('active');
+            }
+        });
+
+        const method = selectedPaymentMethod();
+        const type = selectedPaymentType();
+
+        if (method === 'Cash on Delivery') {
+            cardFields.style.display = 'none';
+            walletFields.style.display = 'none';
+            googleEmailBox.style.display = 'none';
+            clearErrors();
+            return;
+        }
+
+        if (type === 'Visa' || type === 'Mastercard') {
+            cardFields.style.display = 'block';
+            walletFields.style.display = 'none';
+            googleEmailBox.style.display = 'none';
+        } else if (type === 'BenefitPay') {
+            cardFields.style.display = 'none';
+            walletFields.style.display = 'block';
+            googleEmailBox.style.display = 'none';
+        } else if (type === 'Google Pay') {
+            cardFields.style.display = 'none';
+            walletFields.style.display = 'block';
+            googleEmailBox.style.display = 'block';
+        }
+
+        clearErrors();
+    }
+
+    if (cardNumber) {
+        cardNumber.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = value.replace(/(.{4})/g, '$1 ').trim();
+        });
+    }
+
+    if (expiryDate) {
+        expiryDate.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '').substring(0, 4);
+
+            if (value.length >= 3) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+
+            this.value = value;
+        });
+    }
+
+    if (securityCode) {
+        securityCode.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').substring(0, 3);
+        });
+    }
+
+    if (cardName) {
+        cardName.addEventListener('input', function () {
+            this.value = this.value.replace(/[^A-Za-z\s]/g, '').toUpperCase();
+        });
+    }
+
+    if (walletPhone) {
+        walletPhone.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').substring(0, 8);
+        });
+    }
+
+    function validatePayment() {
+        clearErrors();
+
+        const method = selectedPaymentMethod();
+        const type = selectedPaymentType();
+
+        if (method === 'Cash on Delivery') {
+            return true;
+        }
+
+        let valid = true;
+
+        if (type === 'Visa' || type === 'Mastercard') {
+            const cleanCardNumber = cardNumber.value.replace(/\s/g, '');
+
+            if (!/^\d{16}$/.test(cleanCardNumber)) {
+                setError(cardNumber, 'Card number must be 16 digits.');
+                valid = false;
+            }
+
+            if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate.value.trim())) {
+                setError(expiryDate, 'Expiry date must be in MM/YY format.');
+                valid = false;
+            }
+
+            if (!/^\d{3}$/.test(securityCode.value.trim())) {
+                setError(securityCode, 'Security code must be 3 digits.');
+                valid = false;
+            }
+
+            if (!/^[A-Za-z\s]{3,}$/.test(cardName.value.trim())) {
+                setError(cardName, 'Name on card must contain letters only.');
+                valid = false;
+            }
+        }
+
+        if (type === 'BenefitPay') {
+            if (!/^[0-9]{8}$/.test(walletPhone.value.trim())) {
+                setError(walletPhone, 'BenefitPay phone number must be 8 digits.');
+                valid = false;
+            }
+        }
+
+        if (type === 'Google Pay') {
+            if (!/^[0-9]{8}$/.test(walletPhone.value.trim())) {
+                setError(walletPhone, 'Phone number must be 8 digits.');
+                valid = false;
+            }
+
+            if (googleEmail.value.trim() === '') {
+                setError(googleEmail, 'Google Pay email is required.');
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+
+    paymentMethodRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentView);
+    });
+
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentView);
+    });
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function (event) {
+            if (!validatePayment()) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    updatePaymentView();
+});
+</script>
 
 </body>
 </html>
