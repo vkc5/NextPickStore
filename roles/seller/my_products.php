@@ -187,7 +187,8 @@ mysqli_stmt_close($stmt);
         .menu a.active { background: #eef2ff; color: #3158ff; font-weight: 600; }
         .menu-icon-img { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
 
-        .content { flex: 1; padding: 28px; background: #fcfcfc; min-width: 0; }
+        .content { flex: 1; padding: 28px; background: #fcfcfc;
+            border-radius: 14px; min-width: 0; }
 
         .page-title-box { margin-bottom: 22px; }
         .page-title-box h1 { font-size: 32px; margin-bottom: 6px; color: #111827; }

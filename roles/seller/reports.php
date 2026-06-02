@@ -388,7 +388,8 @@ $queryBase = http_build_query([
         .menu a:hover { background: #f4f6ff; color: #3158ff; }
         .menu a.active { background: #eef2ff; color: #3158ff; font-weight: 600; }
         .menu-icon-img { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
-        .content { flex: 1; padding: 28px; background: #fcfcfc; min-width: 0; }
+        .content { flex: 1; padding: 28px; background: #fcfcfc;
+            border-radius: 14px; min-width: 0; }
         .page-title { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
         .page-title h1 { font-size: 30px; color: #111827; margin-bottom: 6px; }
         .page-title p { color: #667085; font-size: 14px; }

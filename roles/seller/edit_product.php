@@ -298,6 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flex: 1;
             padding: 28px;
             background: #fcfcfc;
+            border-radius: 14px;
             min-width: 0;
         }
 

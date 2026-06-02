@@ -263,6 +263,7 @@ function customerStatusClass($status)
     flex: 1;
     padding: 28px;
     background: #fcfcfc;
+            border-radius: 14px;
     min-width: 0;
     align-self: stretch; /* ← ADD THIS */
 }

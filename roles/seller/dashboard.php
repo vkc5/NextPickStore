@@ -114,7 +114,7 @@ $lowStockSql = "
     LEFT JOIN nps_product_images img
         ON p.product_id = img.product_id AND img.is_primary = 1
     WHERE p.seller_id = ?
-      AND p.stock_quantity <= 7
+      AND p.stock_quantity <= 10
       AND p.publish_status <> 'hidden'
     ORDER BY p.stock_quantity ASC, p.product_name ASC
     LIMIT 4
@@ -306,6 +306,7 @@ foreach ($topProducts as $item) {
             flex: 1;
             padding: 28px;
             background: #fcfcfc;
+            border-radius: 14px;
             min-width: 0;
         }
 
