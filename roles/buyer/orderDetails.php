@@ -23,8 +23,8 @@ if (isset($_GET['q'])) {
    CATEGORIES FOR DROPDOWN
 ========================= */
 $categoryResult = mysqli_query($conn, "
-    SELECT 
-        c.category_id, 
+    SELECT
+        c.category_id,
         c.category_name
     FROM nps_categories c
     ORDER BY c.category_name ASC
@@ -888,8 +888,8 @@ $status = $order['order_status'] ?? 'pending';
             </div>
 
             <form class="buyer-search" method="GET" action="dashboard.php">
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     name="q"
                     placeholder="I am Searching for..."
                     value="<?php echo htmlspecialchars($searchTerm); ?>"
@@ -1071,56 +1071,7 @@ $status = $order['order_status'] ?? 'pending';
         <?php endif; ?>
 
     </main>
-
-    <footer class="footer">
-        <div class="footer-top">
-            <div>
-                <h4>E-commerce support</h4>
-                <p>NEXTPICK</p>
-                <p>Manama, Bahrain</p>
-                <p>Phone: +973 123 4567</p>
-                <p>Email: support@nextpick.com</p>
-            </div>
-
-            <div>
-                <h4>Working hours</h4>
-                <p>Monday to Friday: 09:00 - 18:00</p>
-                <p>Saturday: 10:00 - 16:00</p>
-                <p>Sunday: Closed</p>
-            </div>
-
-            <div>
-                <h4>About us</h4>
-                <ul>
-                    <li><a href="#">Stores</a></li>
-                    <li><a href="#">Corporate website</a></li>
-                    <li><a href="#">Exclusive Offers</a></li>
-                    <li><a href="#">Career</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Help &amp; Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li>
-                    <li><a href="#">Payments</a></li>
-                    <li><a href="#">Product returns</a></li>
-                    <li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div>&copy; 2026 NEXTPICK. All Rights Reserved.</div>
-
-            <div class="footer-links">
-                <a href="#">Privacy policy</a>
-                <a href="#">Cookie settings</a>
-                <a href="#">Terms and conditions</a>
-                <a href="#">Imprint</a>
-            </div>
-        </div>
-    </footer>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
 
 </div>
 

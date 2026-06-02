@@ -386,6 +386,7 @@ $address = $old['address'] ?? ($user['address'] ?? '');
             </section>
         </section>
     </main>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
 </div>
 </body>
 </html>

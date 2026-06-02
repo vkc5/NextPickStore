@@ -19,7 +19,7 @@ $categoryName = $name !== '' ? $name : 'Category';
 $products = [];
 
 $stmt = mysqli_prepare($conn, "
-    SELECT 
+    SELECT
         p.product_id,
         p.product_name,
         p.short_description,
@@ -29,7 +29,7 @@ $stmt = mysqli_prepare($conn, "
         pi.image_path
     FROM nps_products p
     LEFT JOIN nps_ratings r ON p.product_id = r.product_id
-    LEFT JOIN nps_product_images pi 
+    LEFT JOIN nps_product_images pi
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     WHERE p.category_id = ?
       AND p.publish_status = 'published'
@@ -471,41 +471,7 @@ if ($catResult) { while ($r = mysqli_fetch_assoc($catResult)) { $categoriess[] =
     </main>
 
     <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-top">
-            <div>
-                <h4>E-commerce support</h4>
-                <p>NEXTPICK</p><p>Manama, Bahrain</p>
-                <p>Phone: +973 123 4567</p><p>Email: support@nextpick.com</p>
-            </div>
-            <div>
-                <h4>Working hours</h4>
-                <p>Monday to Friday: 09:00 - 18:00</p>
-                <p>Saturday: 10:00 - 16:00</p><p>Sunday: Closed</p>
-            </div>
-            <div>
-                <h4>About us</h4>
-                <ul>
-                    <li><a href="#">Stores</a></li><li><a href="#">Corporate website</a></li>
-                    <li><a href="#">Exclusive Offers</a></li><li><a href="#">Career</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>Help &amp; Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li><li><a href="#">Payments</a></li>
-                    <li><a href="#">Product returns</a></li><li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div>&copy; 2026 NEXTPICK. All Rights Reserved.</div>
-            <div class="footer-links">
-                <a href="#">Privacy policy</a><a href="#">Cookie settings</a>
-                <a href="#">Terms and conditions</a><a href="#">Imprint</a>
-            </div>
-        </div>
-    </footer>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
 
 </div>
 </body>

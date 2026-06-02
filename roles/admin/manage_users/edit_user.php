@@ -22,7 +22,7 @@ $old = $_SESSION['edit_user_old'] ?? [];
 unset($_SESSION['edit_user_errors'], $_SESSION['edit_user_success'], $_SESSION['edit_user_old']);
 
 $sql = "
-    SELECT 
+    SELECT
         u.user_id,
         u.full_name,
         u.email,
@@ -530,42 +530,7 @@ $roleName = $user['role_name'];
                     </div>
                 </main>
             </div>
-
-            <footer class="footer">
-                <div class="footer-top">
-                    <div>
-                        <h4>E-commerce support</h4>
-                        <div>NEXTPICK</div>
-                        <div>Damstraat 123</div>
-                        <div>1012 AB Amsterdam</div>
-                        <div>The Netherlands</div>
-                        <br>
-                        <div>Phone: +31 20 123 4567</div>
-                        <div>Email: support@nextpick.com</div>
-                    </div>
-
-                    <div>
-                        <h4>About us</h4>
-                        <div>Career</div>
-                    </div>
-
-                    <div>
-                        <h4>Help & Support</h4>
-                        <div>Help center</div>
-                        <div>FAQ</div>
-                    </div>
-
-                    <div>
-                        <h4>Find Us</h4>
-                        <div>Facebook | Instagram | Twitter</div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <div>© 2026 NEXTPICK. All Rights Reserved.</div>
-                    <div>Privacy policy &nbsp;&nbsp; Cookie settings &nbsp;&nbsp; Terms and conditions</div>
-                </div>
-            </footer>
+    <?php include_once dirname(__DIR__, 3) . '/includes/footer.php'; ?>
         </div>
         <script>
             document.getElementById('adminUserForm').addEventListener('submit', function (event) {

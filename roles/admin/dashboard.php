@@ -56,7 +56,7 @@ if ($result) {
 $recentOrders = [];
 
 $sql = "
-    SELECT 
+    SELECT
         oi.order_item_id,
         p.product_name,
         o.shipping_address,
@@ -68,7 +68,7 @@ $sql = "
     FROM nps_order_items oi
     INNER JOIN nps_orders o ON oi.order_id = o.order_id
     INNER JOIN nps_products p ON oi.product_id = p.product_id
-    LEFT JOIN nps_product_images img 
+    LEFT JOIN nps_product_images img
         ON p.product_id = img.product_id AND img.is_primary = 1
     $whereClause
     ORDER BY o.order_date DESC, oi.order_item_id DESC
@@ -653,42 +653,7 @@ function formatStatusClass($status) {
                     </div>
                 </main>
             </div>
-
-            <footer class="footer">
-                <div class="footer-top">
-                    <div>
-                        <h4>E-commerce support</h4>
-                        <div>NEXTPICK</div>
-                        <div>Damstraat 123</div>
-                        <div>1012 AB Amsterdam</div>
-                        <div>The Netherlands</div>
-                        <br>
-                        <div>Phone: +31 20 123 4567</div>
-                        <div>Email: support@nextpick.com</div>
-                    </div>
-
-                    <div>
-                        <h4>About us</h4>
-                        <div>Career</div>
-                    </div>
-
-                    <div>
-                        <h4>Help & Support</h4>
-                        <div>Help center</div>
-                        <div>FAQ</div>
-                    </div>
-
-                    <div>
-                        <h4>Find Us</h4>
-                        <div>Facebook | Instagram | Twitter</div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <div>© 2026 NEXTPICK. All Rights Reserved.</div>
-                    <div>Privacy policy &nbsp;&nbsp; Cookie settings &nbsp;&nbsp; Terms and conditions</div>
-                </div>
-            </footer>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
         </div>
     </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
 include_once '../../includes/auth_guard.php';
-include_once '../../includes/config.php'; 
+include_once '../../includes/config.php';
 include 'search.php';
 
 requireRole(['Buyer']);
@@ -43,27 +43,27 @@ if ($type == "latest") {
     $secLabel     = "New In";
 
     $query = "
-        SELECT 
-            p.product_id, 
+        SELECT
+            p.product_id,
             p.product_name,
-            p.short_description, 
-            p.price, 
-            ROUND(AVG(r.rating_value), 2) AS Rating, 
-            pi.image_path 
+            p.short_description,
+            p.price,
+            ROUND(AVG(r.rating_value), 2) AS Rating,
+            pi.image_path
         FROM nps_products p
         LEFT JOIN nps_ratings r
             ON p.product_id = r.product_id
-        LEFT JOIN nps_product_images pi 
-            ON p.product_id = pi.product_id 
-            AND pi.is_primary = 1 
+        LEFT JOIN nps_product_images pi
+            ON p.product_id = pi.product_id
+            AND pi.is_primary = 1
         WHERE p.publish_status = 'published'
-        GROUP BY 
+        GROUP BY
             p.product_id,
             p.product_name,
             p.short_description,
             p.price,
             pi.image_path
-        ORDER BY p.created_at DESC 
+        ORDER BY p.created_at DESC
         LIMIT 10
     ";
 } elseif ($type == "bestSeller") {
@@ -72,30 +72,30 @@ if ($type == "latest") {
     $secLabel     = "Trending";
 
     $query = "
-        SELECT 
-            p.product_id, 
+        SELECT
+            p.product_id,
             p.product_name,
-            p.short_description, 
-            p.price, 
-            ROUND(AVG(r.rating_value), 2) AS Rating, 
-            pi.image_path, 
-            SUM(o.quantity) AS total 
+            p.short_description,
+            p.price,
+            ROUND(AVG(r.rating_value), 2) AS Rating,
+            pi.image_path,
+            SUM(o.quantity) AS total
         FROM nps_products p
         LEFT JOIN nps_ratings r
             ON p.product_id = r.product_id
-        LEFT JOIN nps_product_images pi 
-            ON p.product_id = pi.product_id 
-            AND pi.is_primary = 1 
-        INNER JOIN nps_order_items o 
+        LEFT JOIN nps_product_images pi
+            ON p.product_id = pi.product_id
+            AND pi.is_primary = 1
+        INNER JOIN nps_order_items o
             ON p.product_id = o.product_id
         WHERE p.publish_status = 'published'
-        GROUP BY 
+        GROUP BY
             p.product_id,
             p.product_name,
             p.short_description,
             p.price,
             pi.image_path
-        ORDER BY total DESC 
+        ORDER BY total DESC
         LIMIT 10
     ";
 } else {
@@ -119,21 +119,21 @@ if ($type == "latest") {
     }
 
     $query = "
-        SELECT 
-            p.product_id, 
+        SELECT
+            p.product_id,
             p.product_name,
-            p.short_description, 
-            p.price, 
-            ROUND(AVG(r.rating_value), 2) AS Rating, 
-            pi.image_path 
+            p.short_description,
+            p.price,
+            ROUND(AVG(r.rating_value), 2) AS Rating,
+            pi.image_path
         FROM nps_products p
         LEFT JOIN nps_ratings r
             ON p.product_id = r.product_id
-        LEFT JOIN nps_product_images pi 
-            ON p.product_id = pi.product_id 
-            AND pi.is_primary = 1 
+        LEFT JOIN nps_product_images pi
+            ON p.product_id = pi.product_id
+            AND pi.is_primary = 1
         WHERE p.publish_status = 'published'
-        GROUP BY 
+        GROUP BY
             p.product_id,
             p.product_name,
             p.short_description,
@@ -148,18 +148,18 @@ $results = mysqli_query($conn, $query);
 
 /* === CATEGORIES FOR DROPDOWN === */
 $categoryResult = mysqli_query($conn, "
-    SELECT 
-        c.category_id, 
-        c.category_name, 
+    SELECT
+        c.category_id,
+        c.category_name,
         MIN(pi.image_path) AS img
     FROM nps_categories c
-    LEFT JOIN nps_products p 
+    LEFT JOIN nps_products p
         ON c.category_id = p.category_id
-    LEFT JOIN nps_product_images pi 
-        ON p.product_id = pi.product_id 
+    LEFT JOIN nps_product_images pi
+        ON p.product_id = pi.product_id
         AND pi.is_primary = 1
     GROUP BY c.category_id, c.category_name
-    ORDER BY c.category_name ASC 
+    ORDER BY c.category_name ASC
     LIMIT 6
 ");
 
@@ -988,8 +988,8 @@ if ($categoryResult) {
                     <?php endif; ?>
 
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a 
-                            href="ViewAllProducts.php?type=allproducts&page=<?php echo $i; ?>" 
+                        <a
+                            href="ViewAllProducts.php?type=allproducts&page=<?php echo $i; ?>"
                             class="page-btn <?php echo $i == $page ? 'active' : ''; ?>"
                         >
                             <?php echo $i; ?>
@@ -1018,56 +1018,7 @@ if ($categoryResult) {
         <?php endif; ?>
 
     </main>
-
-    <footer class="footer">
-        <div class="footer-top">
-            <div>
-                <h4>E-commerce support</h4>
-                <p>NEXTPICK</p>
-                <p>Manama, Bahrain</p>
-                <p>Phone: +973 123 4567</p>
-                <p>Email: support@nextpick.com</p>
-            </div>
-
-            <div>
-                <h4>Working hours</h4>
-                <p>Monday to Friday: 09:00 - 18:00</p>
-                <p>Saturday: 10:00 - 16:00</p>
-                <p>Sunday: Closed</p>
-            </div>
-
-            <div>
-                <h4>About us</h4>
-                <ul>
-                    <li><a href="#">Stores</a></li>
-                    <li><a href="#">Corporate website</a></li>
-                    <li><a href="#">Exclusive Offers</a></li>
-                    <li><a href="#">Career</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Help &amp; Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li>
-                    <li><a href="#">Payments</a></li>
-                    <li><a href="#">Product returns</a></li>
-                    <li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div>&copy; 2026 NEXTPICK. All Rights Reserved.</div>
-
-            <div class="footer-links">
-                <a href="#">Privacy policy</a>
-                <a href="#">Cookie settings</a>
-                <a href="#">Terms and conditions</a>
-                <a href="#">Imprint</a>
-            </div>
-        </div>
-    </footer>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
 
 </div>
 

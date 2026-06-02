@@ -669,9 +669,9 @@ function renderStars($rating) {
 
                     <div class="product-card">
                         <div class="main-image-box">
-                            <img 
+                            <img
                                 id="previewTrigger"
-                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>" 
+                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>"
                                 alt="Product"
                                 >
                             <div class="image-click-note">Click to view image</div>
@@ -728,7 +728,7 @@ function renderStars($rating) {
                                     <form class="delete-form" action="process_delete_comment.php" method="POST">
                                         <input type="hidden" name="comment_id" value="<?php echo (int) $comment['comment_id']; ?>">
                                         <input type="hidden" name="product_id" value="<?php echo (int) $product['product_id']; ?>">
-                                        <button 
+                                        <button
                                             type="button"
                                             class="delete-btn"
                                             onclick="openDeleteModal(this.closest('form'))">
@@ -761,48 +761,16 @@ function renderStars($rating) {
                     <div class="image-modal-overlay" id="imageModalOverlay">
                         <div class="image-modal-box">
                             <button type="button" class="image-modal-close" id="imageModalCloseBtn">×</button>
-                            <img 
-                                id="imageModalPreview" 
-                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>" 
+                            <img
+                                id="imageModalPreview"
+                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>"
                                 alt="Product Preview"
                                 >
                         </div>
                     </div>
                 </main>
             </div>
-
-            <footer class="footer">
-                <div class="footer-top">
-                    <div>
-                        <h4>E-commerce support</h4>
-                        <div>NEXTPICK</div>
-                        <div>Damstraat 123</div>
-                        <div>1012 AB Amsterdam</div>
-                        <div>The Netherlands</div>
-                        <br>
-                        <div>Phone: +31 20 123 4567</div>
-                        <div>Email: support@nextpick.com</div>
-                    </div>
-                    <div>
-                        <h4>About us</h4>
-                        <div>Career</div>
-                    </div>
-                    <div>
-                        <h4>Help & Support</h4>
-                        <div>Help center</div>
-                        <div>FAQ</div>
-                    </div>
-                    <div>
-                        <h4>Find Us</h4>
-                        <div>Facebook | Instagram | Twitter</div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <div>© 2026 NEXTPICK. All Rights Reserved.</div>
-                    <div>Privacy policy &nbsp;&nbsp; Cookie settings &nbsp;&nbsp; Terms and conditions</div>
-                </div>
-            </footer>
+    <?php include_once dirname(__DIR__, 3) . '/includes/footer.php'; ?>
         </div>
         <script>
             let formToSubmit = null;

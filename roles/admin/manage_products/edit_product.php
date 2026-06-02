@@ -534,7 +534,7 @@ if ($catResult) {
                             <div class="side-info">
                                 <strong>Current Primary Image</strong>
                             </div>
-                            
+
                             <div class="field-group">
                                 <label>Change Product Image</label>
                                 <input type="file" name="product_image" accept="image/*">
@@ -542,7 +542,7 @@ if ($catResult) {
                                     Leave empty if you do not want to change the image.
                                 </small>
                             </div>
-                            
+
                             <div class="publish-status-group">
                                 <label style="display:block; margin-bottom:10px; font-size:14px; font-weight:600;">Publish Status</label>
                                 <div class="radio-row">
@@ -574,39 +574,7 @@ if ($catResult) {
                     </form>
                 </main>
             </div>
-
-            <footer class="footer">
-                <div class="footer-top">
-                    <div>
-                        <h4>E-commerce support</h4>
-                        <div>NEXTPICK</div>
-                        <div>Damstraat 123</div>
-                        <div>1012 AB Amsterdam</div>
-                        <div>The Netherlands</div>
-                        <br>
-                        <div>Phone: +31 20 123 4567</div>
-                        <div>Email: support@nextpick.com</div>
-                    </div>
-                    <div>
-                        <h4>About us</h4>
-                        <div>Career</div>
-                    </div>
-                    <div>
-                        <h4>Help & Support</h4>
-                        <div>Help center</div>
-                        <div>FAQ</div>
-                    </div>
-                    <div>
-                        <h4>Find Us</h4>
-                        <div>Facebook | Instagram | Twitter</div>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <div>© 2026 NEXTPICK. All Rights Reserved.</div>
-                    <div>Privacy policy &nbsp;&nbsp; Cookie settings &nbsp;&nbsp; Terms and conditions</div>
-                </div>
-            </footer>
+    <?php include_once dirname(__DIR__, 3) . '/includes/footer.php'; ?>
         </div>
         <script>
             document.getElementById('adminProductForm').addEventListener('submit', function (event) {

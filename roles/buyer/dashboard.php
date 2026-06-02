@@ -1,6 +1,6 @@
 <?php
 include_once '../../includes/auth_guard.php';
-include_once '../../includes/config.php'; 
+include_once '../../includes/config.php';
 include 'search.php';
 
 requireRole(['Buyer']);
@@ -52,23 +52,23 @@ $searchResults = [];
 
 if ($isSearching) {
     $searchSql = "
-        SELECT 
-            p.product_id, 
+        SELECT
+            p.product_id,
             p.product_name,
-            p.short_description, 
+            p.short_description,
             p.price,
-            ROUND(AVG(r.rating_value), 2) AS Rating, 
+            ROUND(AVG(r.rating_value), 2) AS Rating,
             pi.image_path
         FROM nps_products p
         LEFT JOIN nps_ratings r ON p.product_id = r.product_id
-        LEFT JOIN nps_product_images pi 
+        LEFT JOIN nps_product_images pi
             ON p.product_id = pi.product_id AND pi.is_primary = 1
-        LEFT JOIN nps_categories c 
+        LEFT JOIN nps_categories c
             ON p.category_id = c.category_id
         WHERE p.publish_status = 'published'
           AND (
                 p.product_name LIKE ?
-                OR p.short_description LIKE ? 
+                OR p.short_description LIKE ?
                 OR c.category_name LIKE ?
           )
         GROUP BY p.product_id
@@ -93,20 +93,20 @@ if ($isSearching) {
    LATEST ARRIVED
 ========================= */
 $new = mysqli_query($conn, "
-    SELECT 
-        p.product_id, 
+    SELECT
+        p.product_id,
         p.product_name,
-        p.short_description, 
+        p.short_description,
         p.price,
-        ROUND(AVG(r.rating_value),2) AS Rating, 
+        ROUND(AVG(r.rating_value),2) AS Rating,
         pi.image_path
     FROM nps_products p
     LEFT JOIN nps_ratings r ON p.product_id = r.product_id
-    LEFT JOIN nps_product_images pi 
+    LEFT JOIN nps_product_images pi
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     WHERE p.publish_status = 'published'
     GROUP BY p.product_id
-    ORDER BY p.created_at DESC 
+    ORDER BY p.created_at DESC
     LIMIT 5
 ");
 
@@ -114,16 +114,16 @@ $new = mysqli_query($conn, "
    CATEGORIES
 ========================= */
 $categoryResult = mysqli_query($conn, "
-    SELECT 
-        c.category_id, 
-        c.category_name, 
+    SELECT
+        c.category_id,
+        c.category_name,
         MIN(pi.image_path) AS img
     FROM nps_categories c
     LEFT JOIN nps_products p ON c.category_id = p.category_id
-    LEFT JOIN nps_product_images pi 
+    LEFT JOIN nps_product_images pi
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     GROUP BY c.category_id, c.category_name
-    ORDER BY c.category_name ASC 
+    ORDER BY c.category_name ASC
     LIMIT 6
 ");
 
@@ -139,22 +139,22 @@ if ($categoryResult) {
    BEST SELLERS
 ========================= */
 $bestSeller = mysqli_query($conn, "
-    SELECT 
-        p.product_id, 
+    SELECT
+        p.product_id,
         p.product_name,
-        p.short_description, 
+        p.short_description,
         p.price,
-        ROUND(AVG(r.rating_value),2) AS Rating, 
-        pi.image_path, 
+        ROUND(AVG(r.rating_value),2) AS Rating,
+        pi.image_path,
         SUM(o.quantity) AS total
     FROM nps_products p
     LEFT JOIN nps_ratings r ON p.product_id = r.product_id
-    LEFT JOIN nps_product_images pi 
+    LEFT JOIN nps_product_images pi
         ON p.product_id = pi.product_id AND pi.is_primary = 1
     INNER JOIN nps_order_items o ON p.product_id = o.product_id
     WHERE p.publish_status = 'published'
-    GROUP BY p.product_id 
-    ORDER BY total DESC 
+    GROUP BY p.product_id
+    ORDER BY total DESC
     LIMIT 5
 ");
 ?>
@@ -1113,8 +1113,8 @@ $bestSeller = mysqli_query($conn, "
             </div>
 
             <form class="buyer-search" method="GET" action="dashboard.php">
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     name="q"
                     placeholder="I am Searching for..."
                     value="<?php echo htmlspecialchars($searchTerm); ?>"
@@ -1134,10 +1134,10 @@ $bestSeller = mysqli_query($conn, "
 
     <!-- HERO -->
     <section class="hero-section" id="heroSection">
-        <img 
+        <img
             class="hero-bg-img"
             src="../../assets/images/products/banner-tech-store.png.png"
-            alt="Banner" 
+            alt="Banner"
             id="heroImg"
             onerror="this.onerror=null; this.style.display='none';"
         >
@@ -1182,7 +1182,7 @@ $bestSeller = mysqli_query($conn, "
                     <div>
                         <h2>Search results</h2>
                         <p>
-                            Results for 
+                            Results for
                             <strong>"<?php echo htmlspecialchars($searchTerm); ?>"</strong>
                             &nbsp;(<?php echo count($searchResults); ?> found)
                         </p>
@@ -1199,7 +1199,7 @@ $bestSeller = mysqli_query($conn, "
                             <a href="productDetails.php?id=<?php echo $row['product_id']; ?>">
                                 <div class="product-card">
                                     <div class="prod-img-wrap">
-                                        <img 
+                                        <img
                                             src="<?php echo productImagePath($row['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($row['product_name']); ?>"
                                             onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
@@ -1230,7 +1230,7 @@ $bestSeller = mysqli_query($conn, "
                         <div class="empty-icon">🔎</div>
                         <h3>No products found</h3>
                         <p>
-                            We couldn't find anything matching 
+                            We couldn't find anything matching
                             <strong>"<?php echo htmlspecialchars($searchTerm); ?>"</strong>.
                             <br>
                             Try a different keyword or browse our categories.
@@ -1266,7 +1266,7 @@ $bestSeller = mysqli_query($conn, "
                                     <span class="prod-badge">−20%</span>
 
                                     <div class="prod-img-wrap">
-                                        <img 
+                                        <img
                                             src="<?php echo productImagePath($row['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($row['product_name']); ?>"
                                             onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
@@ -1364,7 +1364,7 @@ $bestSeller = mysqli_query($conn, "
                                 <div class="cat-card">
                                     <div class="cat-img-wrap">
                                         <?php if (!empty($cat['img'])): ?>
-                                            <img 
+                                            <img
                                                 src="<?php echo productImagePath($cat['img']); ?>"
                                                 alt="<?php echo htmlspecialchars($cat['category_name']); ?>"
                                                 onerror="this.style.display='none'; this.parentElement.querySelector('.cat-fallback-icon').style.display='flex';"
@@ -1451,7 +1451,7 @@ $bestSeller = mysqli_query($conn, "
                                     <span class="prod-badge hot">−30%</span>
 
                                     <div class="prod-img-wrap">
-                                        <img 
+                                        <img
                                             src="<?php echo productImagePath($r['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($r['product_name']); ?>"
                                             onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
@@ -1487,55 +1487,7 @@ $bestSeller = mysqli_query($conn, "
     </main>
 
     <!-- FOOTER -->
-    <footer class="footer">
-        <div class="footer-top">
-            <div>
-                <h4>E-commerce support</h4>
-                <p>NEXTPICK</p>
-                <p>Manama, Bahrain</p>
-                <p>Phone: +973 123 4567</p>
-                <p>Email: support@nextpick.com</p>
-            </div>
-
-            <div>
-                <h4>Working hours</h4>
-                <p>Monday to Friday: 09:00 - 18:00</p>
-                <p>Saturday: 10:00 - 16:00</p>
-                <p>Sunday: Closed</p>
-            </div>
-
-            <div>
-                <h4>About us</h4>
-                <ul>
-                    <li><a href="#">Stores</a></li>
-                    <li><a href="#">Corporate website</a></li>
-                    <li><a href="#">Exclusive Offers</a></li>
-                    <li><a href="#">Career</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Help &amp; Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li>
-                    <li><a href="#">Payments</a></li>
-                    <li><a href="#">Product returns</a></li>
-                    <li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div>&copy; 2026 NEXTPICK. All Rights Reserved.</div>
-
-            <div class="footer-links">
-                <a href="#">Privacy policy</a>
-                <a href="#">Cookie settings</a>
-                <a href="#">Terms and conditions</a>
-                <a href="#">Imprint</a>
-            </div>
-        </div>
-    </footer>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
 
 </div>
 

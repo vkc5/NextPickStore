@@ -31,8 +31,8 @@ if (isset($_GET['q'])) {
    CATEGORIES FOR DROPDOWN
 ========================= */
 $categoryResult = mysqli_query($conn, "
-    SELECT 
-        c.category_id, 
+    SELECT
+        c.category_id,
         c.category_name
     FROM nps_categories c
     ORDER BY c.category_name ASC
@@ -1088,7 +1088,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             .buyer-search,
             .nav-actions {
                 width: 100%;
-                
+
             }
 
             .nav-actions {
@@ -1173,8 +1173,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             </div>
 
             <form class="buyer-search" method="GET" action="dashboard.php">
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     name="q"
                     placeholder="I am Searching for..."
                     value="<?php echo htmlspecialchars($searchTerm); ?>"
@@ -1243,10 +1243,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="full_name">Full Name</label>
-                                <input 
+                                <input
                                     class="form-control"
-                                    type="text" 
-                                    id="full_name" 
+                                    type="text"
+                                    id="full_name"
                                     name="full_name"
                                     pattern="[A-Za-z\s]{3,}"
                                     title="Name should contain letters only"
@@ -1256,10 +1256,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                             <div class="form-group">
                                 <label for="phone">Phone Number</label>
-                                <input 
+                                <input
                                     class="form-control"
-                                    type="text" 
-                                    id="phone" 
+                                    type="text"
+                                    id="phone"
                                     name="phone"
                                     pattern="[0-9]{8}"
                                     maxlength="8"
@@ -1270,10 +1270,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                             <div class="form-group">
                                 <label for="house">House / Flat Number</label>
-                                <input 
+                                <input
                                     class="form-control"
-                                    type="text" 
-                                    id="house" 
+                                    type="text"
+                                    id="house"
                                     name="house"
                                     required
                                 >
@@ -1281,10 +1281,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                             <div class="form-group">
                                 <label for="road">Road Number</label>
-                                <input 
+                                <input
                                     class="form-control"
-                                    type="text" 
-                                    id="road" 
+                                    type="text"
+                                    id="road"
                                     name="road"
                                     required
                                 >
@@ -1292,10 +1292,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                             <div class="form-group">
                                 <label for="block">Block Number</label>
-                                <input 
+                                <input
                                     class="form-control"
-                                    type="text" 
-                                    id="block" 
+                                    type="text"
+                                    id="block"
                                     name="block"
                                     required
                                 >
@@ -1303,10 +1303,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                             <div class="form-group">
                                 <label for="area">Area / City</label>
-                                <input 
+                                <input
                                     class="form-control"
-                                    type="text" 
-                                    id="area" 
+                                    type="text"
+                                    id="area"
                                     name="area"
                                     required
                                 >
@@ -1348,7 +1348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                             <div class="fake-card-form" id="cardFields">
                                                 <div class="form-group full-row">
                                                     <label for="card_number">Card Number</label>
-                                                    <input 
+                                                    <input
                                                         class="form-control"
                                                         type="text"
                                                         id="card_number"
@@ -1362,7 +1362,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                                 <div class="form-grid">
                                                     <div class="form-group">
                                                         <label for="expiry_date">Expiry Date</label>
-                                                        <input 
+                                                        <input
                                                             class="form-control"
                                                             type="text"
                                                             id="expiry_date"
@@ -1375,7 +1375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                                                     <div class="form-group">
                                                         <label for="security_code">Security Code</label>
-                                                        <input 
+                                                        <input
                                                             class="form-control"
                                                             type="text"
                                                             id="security_code"
@@ -1389,12 +1389,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                                                 <div class="form-group full-row">
                                                     <label for="card_name">Name on Card</label>
-                                                    <input 
+                                                    <input
                                                         class="form-control"
                                                         type="text"
                                                         id="card_name"
                                                         name="card_name"
-                                                       
+
                                                     >
                                                     <small class="field-error" id="cardNameError"></small>
                                                 </div>
@@ -1403,7 +1403,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                             <div class="fake-wallet-form" id="walletFields" style="display:none;">
                                                 <div class="form-group full-row">
                                                     <label for="wallet_phone">Wallet Phone Number</label>
-                                                    <input 
+                                                    <input
                                                         class="form-control"
                                                         type="text"
                                                         id="wallet_phone"
@@ -1416,7 +1416,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                                                 <div class="form-group full-row" id="googleEmailBox" style="display:none;">
                                                     <label for="google_email">Google Pay Email</label>
-                                                    <input 
+                                                    <input
                                                         class="form-control"
                                                         type="email"
                                                         id="google_email"
@@ -1443,7 +1443,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                         </div>
                                     </label>
 
-                                    
+
                                 </div>
                             </div>
                         </div>
@@ -1460,8 +1460,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
                             <div class="order-item">
                                 <div class="order-img">
-                                    <img 
-                                        src="<?php echo $imagePath; ?>" 
+                                    <img
+                                        src="<?php echo $imagePath; ?>"
                                         alt="Product image"
                                         onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                                     >
@@ -1525,56 +1525,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
         <?php endif; ?>
 
     </main>
-
-    <footer class="footer">
-        <div class="footer-top">
-            <div>
-                <h4>E-commerce support</h4>
-                <p>NEXTPICK</p>
-                <p>Manama, Bahrain</p>
-                <p>Phone: +973 123 4567</p>
-                <p>Email: support@nextpick.com</p>
-            </div>
-
-            <div>
-                <h4>Working hours</h4>
-                <p>Monday to Friday: 09:00 - 18:00</p>
-                <p>Saturday: 10:00 - 16:00</p>
-                <p>Sunday: Closed</p>
-            </div>
-
-            <div>
-                <h4>About us</h4>
-                <ul>
-                    <li><a href="#">Stores</a></li>
-                    <li><a href="#">Corporate website</a></li>
-                    <li><a href="#">Exclusive Offers</a></li>
-                    <li><a href="#">Career</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <h4>Help &amp; Support</h4>
-                <ul>
-                    <li><a href="#">Help center</a></li>
-                    <li><a href="#">Payments</a></li>
-                    <li><a href="#">Product returns</a></li>
-                    <li><a href="#">FAQ</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div>&copy; 2026 NEXTPICK. All Rights Reserved</div>
-
-            <div class="footer-links">
-                <a href="#">Privacy policy</a>
-                <a href="#">Cookie settings</a>
-                <a href="#">Terms and conditions</a>
-                <a href="#">Imprint</a>
-            </div>
-        </div>
-    </footer>
+    <?php include_once dirname(__DIR__, 2) . '/includes/footer.php'; ?>
 
 </div>
 
