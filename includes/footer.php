@@ -2,6 +2,7 @@
 $footerPage = str_replace('\\', '/', $_SERVER['PHP_SELF'] ?? '');
 $isAdminFooter = strpos($footerPage, '/roles/admin/') !== false;
 $footerBackground = $isAdminFooter ? '#f6f6f6' : '#fff';
+$footerBase = '/NextPickStore/public';
 ?>
 <style>
     .footer {
@@ -103,29 +104,29 @@ $footerBackground = $isAdminFooter ? '#f6f6f6' : '#fff';
         <div>
             <h4>About us</h4>
             <ul>
-                <li><a href="#">Stores</a></li>
-                <li><a href="#">Corporate website</a></li>
-                <li><a href="#">Exclusive Offers</a></li>
-                <li><a href="#">Career</a></li>
+                <li><a href="<?php echo $footerBase; ?>/stores.php">Stores</a></li>
+                <li><a href="<?php echo $footerBase; ?>/corporate.php">Corporate website</a></li>
+                <li><a href="<?php echo $footerBase; ?>/offers.php">Exclusive Offers</a></li>
+                <li><a href="<?php echo $footerBase; ?>/career.php">Career</a></li>
             </ul>
         </div>
         <div>
             <h4>Help &amp; Support</h4>
             <ul>
-                <li><a href="#">Help center</a></li>
-                <li><a href="#">Payments</a></li>
-                <li><a href="#">Product returns</a></li>
-                <li><a href="#">FAQ</a></li>
+                <li><a href="<?php echo $footerBase; ?>/help_center.php">Help center</a></li>
+                <li><a href="<?php echo $footerBase; ?>/payments.php">Payments</a></li>
+                <li><a href="<?php echo $footerBase; ?>/product_returns.php">Product returns</a></li>
+                <li><a href="<?php echo $footerBase; ?>/faq.php">FAQ</a></li>
             </ul>
         </div>
     </div>
     <div class="footer-bottom">
         <div>&copy; 2024 NEXTPICK. All Rights Reserved.</div>
         <div class="footer-links">
-            <a href="#">Privacy policy</a>
-            <a href="#">Cookie settings</a>
-            <a href="#">Terms and conditions</a>
-            <a href="#">Imprint</a>
+            <a href="<?php echo $footerBase; ?>/privacy_policy.php">Privacy policy</a>
+            <a href="<?php echo $footerBase; ?>/cookie_settings.php">Cookie settings</a>
+            <a href="<?php echo $footerBase; ?>/terms.php">Terms and conditions</a>
+            <a href="<?php echo $footerBase; ?>/imprint.php">Imprint</a>
         </div>
     </div>
 </footer>
