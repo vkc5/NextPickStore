@@ -528,7 +528,7 @@ if ($catResult) {
                             <div class="sub-text">Preview the current product image and change publish status.</div>
 
                             <div class="image-box">
-                                <img src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'assets/images/placeholder.png'); ?>" alt="Product">
+                                <img src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>" alt="Product">
                             </div>
 
                             <div class="side-info">

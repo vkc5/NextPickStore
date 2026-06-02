@@ -21,8 +21,8 @@ $errors = [];
 
 if ($password === '') {
     $errors['password'] = 'Password is required.';
-} elseif (strlen($password) < 8) {
-    $errors['password'] = 'Password must be at least 8 characters.';
+} elseif (!isStrongPassword($password)) {
+    $errors['password'] = passwordStrengthMessage();
 }
 
 if ($confirmPassword === '') {

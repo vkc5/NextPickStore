@@ -147,7 +147,7 @@ if ($isLoggedIn) {
         <?php else: ?>
             <section class="grid">
                 <?php foreach ($products as $product): ?>
-                    <?php $imagePath = !empty($product['image_path']) ? $product['image_path'] : 'assets/images/products/view.png'; ?>
+                    <?php $imagePath = !empty($product['image_path']) ? $product['image_path'] : 'uploads/products/view.png'; ?>
                     <article class="product-card">
                         <img src="/NextPickStore/<?php echo htmlspecialchars($imagePath); ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
                         <div class="product-body">

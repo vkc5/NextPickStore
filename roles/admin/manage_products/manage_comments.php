@@ -469,7 +469,7 @@ $adminName = $_SESSION['full_name'] ?? 'Admin';
                     html += `
                         <tr>
                             <td>
-                                <img class="product-thumb" src="../../../${escapeHtml(product.image_path || 'assets/images/placeholder.png')}" alt="Product">
+                                <img class="product-thumb" src="../../../${escapeHtml(product.image_path || 'uploads/products/view.png')}" alt="Product">
                             </td>
                             <td>${escapeHtml(product.product_name)}</td>
                             <td>${escapeHtml(product.total_comments)}</td>

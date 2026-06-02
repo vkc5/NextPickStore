@@ -926,7 +926,7 @@ function statusClass($status)
                                     <?php
                                         $imagePath = !empty($item['image_path'])
                                             ? '../../' . htmlspecialchars($item['image_path'])
-                                            : '../../assets/images/products/view.png';
+                                            : '../../uploads/products/view.png';
 
                                         $lineTotal = (float)$item['item_price'] * (int)$item['quantity'];
                                     ?>

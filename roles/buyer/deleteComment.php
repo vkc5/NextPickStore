@@ -9,8 +9,13 @@ $conn = getConnection();
 
 $userId = $_SESSION['user_id'] ?? 0;
 
-$commentId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$productId = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: dashboard.php");
+    exit();
+}
+
+$commentId = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+$productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
 
 if ($commentId <= 0 || $productId <= 0 || $userId <= 0) {
     header("Location: dashboard.php");

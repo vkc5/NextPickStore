@@ -968,7 +968,7 @@ $total = max(0, $subtotal + $shipping - $discount);
                             $itemTotal = (float)$item['price'] * (int)$item['quantity'];
                             $imagePath = !empty($item['image_path'])
                                 ? '../../' . htmlspecialchars($item['image_path'])
-                                : '../../assets/images/products/view.png';
+                                : '../../uploads/products/view.png';
 
                             $isItemInStock = (int)$item['stock_quantity'] > 0;
                         ?>

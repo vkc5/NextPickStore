@@ -532,7 +532,7 @@ mysqli_stmt_close($stmt);
                                     ?>
                                     <tr>
                                         <td>
-                                            <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/view.png'; ?>" alt="Product" class="thumb">
+                                            <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'uploads/products/view.png'; ?>" alt="Product" class="thumb">
                                         </td>
                                         <td class="product-name"><?php echo htmlspecialchars($product['product_name']); ?></td>
                                         <td class="sku-text"><?php echo htmlspecialchars($product['brand'] ?: '-'); ?></td>
@@ -548,7 +548,7 @@ mysqli_stmt_close($stmt);
                                                 <?php if ($product['publish_status'] === 'hidden'): ?>
                                                     <button type="button" class="table-btn disabled" disabled>Hidden</button>
                                                 <?php else: ?>
-                                                    <form class="hide-form" action="delete_product.php" method="GET">
+                                                    <form class="hide-form" action="delete_product.php" method="POST">
                                                         <input type="hidden" name="id" value="<?php echo (int)$product['product_id']; ?>">
                                                         <button type="button" class="table-btn hide" onclick="openHideModal(this.closest('form'))">Hide</button>
                                                     </form>

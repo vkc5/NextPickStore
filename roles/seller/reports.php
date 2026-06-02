@@ -663,7 +663,7 @@ $queryBase = http_build_query([
                                         <tr>
                                             <td>
                                                 <div style="display:flex; align-items:center; gap:10px;">
-                                                    <img class="report-thumb" src="/NextPickStore/<?php echo htmlspecialchars($row['image_path'] ?: 'assets/images/products/view.png'); ?>" alt="">
+                                                    <img class="report-thumb" src="/NextPickStore/<?php echo htmlspecialchars($row['image_path'] ?: 'uploads/products/view.png'); ?>" alt="">
                                                     <div>
                                                         <strong><?php echo htmlspecialchars($row['product_name']); ?></strong><br>
                                                         <span class="publish-badge publish-<?php echo htmlspecialchars($row['publish_status']); ?>"><?php echo htmlspecialchars($row['publish_status']); ?></span>

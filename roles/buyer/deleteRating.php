@@ -8,7 +8,13 @@ requireRole(['Buyer']);
 $conn = getConnection();
 
 $userId = (int)($_SESSION['user_id'] ?? 0);
-$productId = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: dashboard.php");
+    exit();
+}
+
+$productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
 
 if ($userId <= 0 || $productId <= 0) {
     header("Location: dashboard.php");

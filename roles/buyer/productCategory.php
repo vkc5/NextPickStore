@@ -444,7 +444,7 @@ if ($catResult) { while ($r = mysqli_fetch_assoc($catResult)) { $categoriess[] =
 
                             <div class="prod-img-wrap">
                                 <img
-                                    src="../../<?php echo !empty($row['image_path']) ? htmlspecialchars($row['image_path']) : 'assets/images/products/view.png'; ?>"
+                                    src="../../<?php echo !empty($row['image_path']) ? htmlspecialchars($row['image_path']) : 'uploads/products/view.png'; ?>"
                                     alt="<?php echo htmlspecialchars($row['product_name']); ?>"
                                 >
                             </div>

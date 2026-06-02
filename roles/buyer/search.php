@@ -159,7 +159,7 @@ class Search
             $rating = !empty($row['Rating']) ? htmlspecialchars($row['Rating']) : '0.00';
             $imagePath = !empty($row['image_path'])
                 ? '../../' . htmlspecialchars($row['image_path'])
-                : '../../assets/images/products/view.png';
+                : '../../uploads/products/view.png';
 
             echo '
                 <a href="productDetails.php?id=' . $productId . '">

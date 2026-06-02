@@ -640,7 +640,7 @@ if ($brandResult) {
                             data.rows.forEach(product => {
                                 html += `
                                 <tr>
-                                    <td><img class="product-thumb" src="../../../${escapeHtml(product.image_path || 'assets/images/placeholder.png')}" alt="Product"></td>
+                                    <td><img class="product-thumb" src="../../../${escapeHtml(product.image_path || 'uploads/products/view.png')}" alt="Product"></td>
                                     <td>${escapeHtml(product.product_name)}</td>
                                     <td>${escapeHtml(product.brand || '')}</td>
                                     <td>${escapeHtml(product.category_name)}</td>

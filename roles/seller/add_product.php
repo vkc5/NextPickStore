@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include_once '../../includes/auth_guard.php';
 requireRole(['Seller']);
 include_once '../../includes/config.php';
@@ -43,6 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $brand = trim($_POST['brand'] ?? '');
     $categoryId = trim($_POST['category_id'] ?? '');
     $publishStatus = trim($_POST['publish_status'] ?? 'draft');
+    $imageFile = $_FILES['product_image'] ?? null;
+    $uploadDir = __DIR__ . "/../../uploads/products/";
+    $fileName = "";
+    $targetFile = "";
+    $dbPath = "";
 
     if (
         $productName === '' ||
@@ -59,7 +61,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Stock quantity must be a valid positive number.";
     } elseif (!in_array($publishStatus, ['draft', 'published', 'hidden'])) {
         $error = "Invalid publish status selected.";
+    } elseif (!$imageFile || $imageFile['error'] === UPLOAD_ERR_NO_FILE) {
+        $error = "Product image is required.";
+    } elseif ($imageFile['error'] !== UPLOAD_ERR_OK) {
+        $error = "Product image upload failed. Please choose another image.";
     } else {
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $allowedTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        $fileType = mime_content_type($imageFile['tmp_name']);
+        $fileSize = (int)($imageFile['size'] ?? 0);
+
+        if ($fileSize > 5 * 1024 * 1024) {
+            $error = "Image must be 5MB or smaller.";
+        } elseif (!isset($allowedTypes[$fileType])) {
+            $error = "Image type is invalid. Only JPG, PNG, and WEBP are allowed.";
+        } else {
+            $originalName = pathinfo($imageFile["name"], PATHINFO_FILENAME);
+            $safeName = preg_replace('/[^A-Za-z0-9\-_]/', '-', $originalName);
+            $safeName = trim($safeName, '-');
+
+            if ($safeName === '') {
+                $safeName = 'product-image';
+            }
+
+            $fileName = $safeName . '-' . bin2hex(random_bytes(8)) . '.' . $allowedTypes[$fileType];
+            $targetFile = $uploadDir . $fileName;
+            $dbPath = "uploads/products/" . $fileName;
+        }
+    }
+
+    if ($error === "") {
         $insertSql = "
             INSERT INTO nps_products
             (seller_id, category_id, product_name, short_description, full_description, price, stock_quantity, publish_status, brand, created_at, updated_at)
@@ -85,39 +119,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newProductId = mysqli_insert_id($conn);
             mysqli_stmt_close($stmt);
 
-            if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === 0) {
-                $uploadDir = __DIR__ . "/../../uploads/products/";
-
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
+            if (move_uploaded_file($imageFile["tmp_name"], $targetFile)) {
+                $imgSql = "INSERT INTO nps_product_images (product_id, image_path, is_primary) VALUES (?, ?, 1)";
+                $stmt = mysqli_prepare($conn, $imgSql);
+                mysqli_stmt_bind_param($stmt, "is", $newProductId, $dbPath);
+                if (!mysqli_stmt_execute($stmt)) {
+                    $error = "Image upload failed to save: " . mysqli_stmt_error($stmt);
                 }
-
-                $originalName = basename($_FILES["product_image"]["name"]);
-                $fileName = time() . "_" . preg_replace('/[^A-Za-z0-9.\-_]/', '_', $originalName);
-                $targetFile = $uploadDir . $fileName;
-                $dbPath = "uploads/products/" . $fileName;
-
-                $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-                $fileType = mime_content_type($_FILES['product_image']['tmp_name']);
-                $fileSize = (int)($_FILES['product_image']['size'] ?? 0);
-
-                if ($fileSize > 5 * 1024 * 1024) {
-                    $error = "Product saved, but image must be 5MB or smaller.";
-                } elseif (!in_array($fileType, $allowedTypes)) {
-                    $error = "Product saved, but image type is invalid. Only JPG, PNG, and WEBP are allowed.";
-                } else {
-                    if (move_uploaded_file($_FILES["product_image"]["tmp_name"], $targetFile)) {
-    $imgSql = "INSERT INTO nps_product_images (product_id, image_path, is_primary) VALUES (?, ?, 1)";
-    $stmt = mysqli_prepare($conn, $imgSql);
-    mysqli_stmt_bind_param($stmt, "is", $newProductId, $dbPath);
-    if (!mysqli_stmt_execute($stmt)) {
-        $error = "Image upload failed to save: " . mysqli_stmt_error($stmt);
-    }
-    mysqli_stmt_close($stmt);
-} else {
-    $error = "Product saved, but image upload failed. Check folder permissions.";
-}
-                }
+                mysqli_stmt_close($stmt);
+            } else {
+                $error = "Image upload failed. Check folder permissions.";
             }
 
             if ($error === "") {
@@ -831,7 +842,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="upload-box">
                                     <div class="upload-big-icon">↑</div>
                                     <p>Drag & drop an image here, or browse to upload.<br>JPG, PNG, WEBP up to 5MB</p>
-                                    <input type="file" name="product_image" accept=".jpg,.jpeg,.png,.webp">
+                                    <input type="file" name="product_image" accept=".jpg,.jpeg,.png,.webp" required>
                                 </div>
                             </div>
 
@@ -947,12 +958,14 @@ document.getElementById('sellerProductForm').addEventListener('submit', function
 
     const price = document.querySelector('[name="price"]');
     const stock = document.querySelector('[name="stock_quantity"]');
+    const image = document.querySelector('[name="product_image"]');
     if (price && (price.value === '' || Number(price.value) < 0)) valid = false;
     if (stock && (stock.value === '' || Number(stock.value) < 0)) valid = false;
+    if (!image || image.files.length === 0) valid = false;
 
     if (!valid) {
         event.preventDefault();
-        alert('Please fill all required product fields correctly.');
+        alert('Please fill all required product fields correctly and upload a product image.');
     }
 });
 </script>

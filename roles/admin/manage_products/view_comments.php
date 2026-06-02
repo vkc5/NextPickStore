@@ -671,7 +671,7 @@ function renderStars($rating) {
                         <div class="main-image-box">
                             <img 
                                 id="previewTrigger"
-                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'assets/images/placeholder.png'); ?>" 
+                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>" 
                                 alt="Product"
                                 >
                             <div class="image-click-note">Click to view image</div>
@@ -763,7 +763,7 @@ function renderStars($rating) {
                             <button type="button" class="image-modal-close" id="imageModalCloseBtn">×</button>
                             <img 
                                 id="imageModalPreview" 
-                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'assets/images/placeholder.png'); ?>" 
+                                src="../../../<?php echo htmlspecialchars($product['image_path'] ?: 'uploads/products/view.png'); ?>" 
                                 alt="Product Preview"
                                 >
                         </div>

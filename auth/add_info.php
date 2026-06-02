@@ -279,8 +279,8 @@ $email = $_SESSION['register_email'];
                 if (password.value.trim() === '') {
                     showError(password, 'Password is required.');
                     hasError = true;
-                } else if (password.value.length < 8) {
-                    showError(password, 'Password must be at least 8 characters.');
+                } else if (!isStrongPassword(password.value)) {
+                    showError(password, 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.');
                     hasError = true;
                 }
 
@@ -303,6 +303,14 @@ $email = $_SESSION['register_email'];
                 error.className = 'field-error js-error';
                 error.textContent = message;
                 input.parentElement.appendChild(error);
+            }
+
+            function isStrongPassword(value) {
+                return value.length >= 8
+                    && /[A-Z]/.test(value)
+                    && /[a-z]/.test(value)
+                    && /[0-9]/.test(value)
+                    && /[^A-Za-z0-9]/.test(value);
             }
         </script>
     </body>

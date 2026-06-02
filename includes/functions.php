@@ -32,4 +32,17 @@ function redirectByRole($roleName) {
 function generateVerificationCode() {
     return str_pad((string) rand(0, 999999), 6, '0', STR_PAD_LEFT);
 }
+
+function isStrongPassword($password) {
+    return is_string($password)
+        && strlen($password) >= 8
+        && preg_match('/[A-Z]/', $password)
+        && preg_match('/[a-z]/', $password)
+        && preg_match('/[0-9]/', $password)
+        && preg_match('/[^A-Za-z0-9]/', $password);
+}
+
+function passwordStrengthMessage() {
+    return 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.';
+}
 ?>

@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include_once '../../includes/auth_guard.php';
 requireRole(['Seller']);
 include_once '../../includes/config.php';
@@ -548,7 +545,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php } ?>
 
                 <div class="product-preview">
-                    <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/view.png'; ?>" alt="Product">
+                    <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'uploads/products/view.png'; ?>" alt="Product">
                     <div>
                         <h3><?php echo htmlspecialchars($product['product_name']); ?></h3>
                         <p>Current brand: <?php echo htmlspecialchars($product['brand'] ?: '-'); ?></p>

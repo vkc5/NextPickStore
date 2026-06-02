@@ -51,8 +51,8 @@ if ($email === '') {
     }
 }
 
-if ($password !== '' && strlen($password) < 8) {
-    $errors['password'] = 'Password must be at least 8 characters.';
+if ($password !== '' && !isStrongPassword($password)) {
+    $errors['password'] = passwordStrengthMessage();
 }
 
 if (!empty($errors)) {

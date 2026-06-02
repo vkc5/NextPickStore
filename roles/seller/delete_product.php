@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include_once '../../includes/auth_guard.php';
 requireRole(['Seller']);
 include_once '../../includes/config.php';
@@ -10,12 +7,17 @@ $conn = getConnection();
 
 $sellerId = $_SESSION['user_id'] ?? 0;
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: /NextPickStore/roles/seller/my_products.php?error=invalid_method");
+    exit();
+}
+
+if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
     header("Location: /NextPickStore/roles/seller/my_products.php?error=invalid");
     exit();
 }
 
-$productId = (int) $_GET['id'];
+$productId = (int) $_POST['id'];
 
 /* =========================
    CHECK PRODUCT BELONGS TO SELLER

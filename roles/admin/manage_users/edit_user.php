@@ -576,13 +576,21 @@ $roleName = $user['role_name'];
 
                 if (!fullName || fullName.value.trim() === '') valid = false;
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) valid = false;
-                if (password && password.value !== '' && password.value.length < 8) valid = false;
+                if (password && password.value !== '' && !isStrongPassword(password.value)) valid = false;
 
                 if (!valid) {
                     event.preventDefault();
-                    alert('Please fill all required user fields correctly.');
+                    alert('Please fill all required user fields correctly. Password must include uppercase, lowercase, number, and symbol.');
                 }
             });
+
+            function isStrongPassword(value) {
+                return value.length >= 8
+                    && /[A-Z]/.test(value)
+                    && /[a-z]/.test(value)
+                    && /[0-9]/.test(value)
+                    && /[^A-Za-z0-9]/.test(value);
+            }
         </script>
     </body>
 </html>

@@ -13,7 +13,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/view.png";
+    return "../../uploads/products/view.png";
 }
 
 function tableColumnExists($conn, $tableName, $columnName)
@@ -814,14 +814,122 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
             margin-top: 10px;
         }
 
-        .comment-actions a {
+        .comment-actions a,
+        .comment-actions button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
             font-size: 12px;
             font-weight: 700;
             color: #3158ff;
         }
 
-        .comment-actions a.delete-link {
+        .comment-actions a.delete-link,
+        .comment-actions button.delete-link {
             color: #d82121;
+        }
+
+        .delete-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.28);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .delete-modal-overlay.show {
+            display: flex;
+        }
+
+        .delete-modal {
+            width: 100%;
+            max-width: 360px;
+            background: #fff;
+            border-radius: 24px;
+            padding: 26px 24px 22px;
+            text-align: center;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            animation: modalPop 0.22s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .delete-modal-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: #fff1f0;
+            color: #ff4d4f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: 700;
+            box-shadow: 0 0 0 8px rgba(255, 77, 79, 0.10);
+        }
+
+        .delete-modal h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .delete-modal p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 22px;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-cancel-btn,
+        .modal-delete-btn {
+            flex: 1;
+            height: 46px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.22s ease;
+        }
+
+        .modal-cancel-btn {
+            background: #f3f3f3;
+            color: #444;
+        }
+
+        .modal-cancel-btn:hover {
+            background: #e7e7e7;
+        }
+
+        .modal-delete-btn {
+            background: #ff4d4f;
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(255, 77, 79, 0.22);
+        }
+
+        .modal-delete-btn:hover {
+            background: #ef3f41;
         }
 
         .empty-reviews {
@@ -1082,7 +1190,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                     <img
                         src="<?php echo productImagePath($product['image_path']); ?>"
                         alt="<?php echo htmlspecialchars($product['product_name']); ?>"
-                        onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
+                        onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                     >
                 </div>
 
@@ -1342,14 +1450,14 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                     </button>
 
                     <?php if ($userRating !== ''): ?>
-                        <a
-                            href="deleteRating.php?product_id=<?php echo (int)$id; ?>"
+                        <button
+                            type="button"
                             class="submit-review-btn"
                             style="background:#fff1f1;color:#d82121;text-decoration:none;"
-                            onclick="return confirm('Delete your rating for this product?');"
+                            onclick="openBuyerDeleteModal('deleteRating.php', 'rating', 0, <?php echo (int)$id; ?>)"
                         >
                             Delete Rating
-                        </a>
+                        </button>
                     <?php endif; ?>
                 </form>
             </section>
@@ -1404,13 +1512,13 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                                             Edit
                                         </a>
 
-                                        <a 
+                                        <button
+                                            type="button"
                                             class="delete-link"
-                                            href="deleteComment.php?id=<?php echo (int)$comment['comment_id']; ?>&product_id=<?php echo (int)$id; ?>"
-                                            onclick="return confirm('Are you sure you want to delete this comment?');"
+                                            onclick="openBuyerDeleteModal('deleteComment.php', 'comment', <?php echo (int)$comment['comment_id']; ?>, <?php echo (int)$id; ?>)"
                                         >
                                             Delete
-                                        </a>
+                                        </button>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -1443,6 +1551,23 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
         <?php endif; ?>
 
     </main>
+
+    <div class="delete-modal-overlay" id="buyerDeleteModalOverlay">
+        <div class="delete-modal">
+            <div class="delete-modal-icon">!</div>
+
+            <h3 id="buyerDeleteModalTitle">Delete item</h3>
+            <p id="buyerDeleteModalText">
+                Are you sure you want to delete this item?<br>
+                This action cannot be undone.
+            </p>
+
+            <div class="delete-modal-actions">
+                <button type="button" class="modal-cancel-btn" onclick="closeBuyerDeleteModal()">Cancel</button>
+                <button type="button" class="modal-delete-btn" id="buyerConfirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
 
     <!-- FOOTER -->
     <footer class="footer">
@@ -1496,5 +1621,73 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
     </footer>
 
 </div>
+<script>
+    var buyerDeleteAction = '';
+    var buyerDeleteCommentId = 0;
+    var buyerDeleteProductId = 0;
+
+    function openBuyerDeleteModal(action, type, commentId, productId) {
+        buyerDeleteAction = action;
+        buyerDeleteCommentId = commentId || 0;
+        buyerDeleteProductId = productId || 0;
+
+        var title = document.getElementById('buyerDeleteModalTitle');
+        var text = document.getElementById('buyerDeleteModalText');
+
+        if (type === 'rating') {
+            title.textContent = 'Delete rating';
+            text.innerHTML = 'Are you sure you want to delete your rating?<br>This action cannot be undone.';
+        } else {
+            title.textContent = 'Delete comment';
+            text.innerHTML = 'Are you sure you want to delete this comment?<br>This action cannot be undone.';
+        }
+
+        document.getElementById('buyerDeleteModalOverlay').classList.add('show');
+    }
+
+    function closeBuyerDeleteModal() {
+        buyerDeleteAction = '';
+        buyerDeleteCommentId = 0;
+        buyerDeleteProductId = 0;
+        document.getElementById('buyerDeleteModalOverlay').classList.remove('show');
+    }
+
+    document.getElementById('buyerConfirmDeleteBtn').addEventListener('click', function () {
+        if (buyerDeleteAction && buyerDeleteProductId > 0) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = buyerDeleteAction;
+
+            if (buyerDeleteCommentId > 0) {
+                var idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = buyerDeleteCommentId;
+                form.appendChild(idInput);
+            }
+
+            var productInput = document.createElement('input');
+            productInput.type = 'hidden';
+            productInput.name = 'product_id';
+            productInput.value = buyerDeleteProductId;
+            form.appendChild(productInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+
+    document.getElementById('buyerDeleteModalOverlay').addEventListener('click', function (event) {
+        if (event.target === this) {
+            closeBuyerDeleteModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeBuyerDeleteModal();
+        }
+    });
+</script>
 </body>
 </html>

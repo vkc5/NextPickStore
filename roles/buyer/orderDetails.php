@@ -964,7 +964,7 @@ $status = $order['order_status'] ?? 'pending';
 
                                 $imagePath = !empty($item['image_path'])
                                     ? '../../' . htmlspecialchars($item['image_path'])
-                                    : '../../assets/images/products/view.png';
+                                    : '../../uploads/products/view.png';
                             ?>
 
                             <div class="order-item">

@@ -15,7 +15,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/view.png";
+    return "../../uploads/products/view.png";
 }
 
 /* =========================
@@ -288,6 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                     UPDATE nps_products
                     SET stock_quantity = stock_quantity - ?
                     WHERE product_id = ?
+                      AND publish_status = 'published'
                       AND stock_quantity >= ?
                 ";
 
@@ -1462,7 +1463,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                                     <img 
                                         src="<?php echo $imagePath; ?>" 
                                         alt="Product image"
-                                        onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
+                                        onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                                     >
                                 </div>
 

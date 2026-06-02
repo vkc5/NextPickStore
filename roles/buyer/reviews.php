@@ -439,9 +439,115 @@ function renderStars($rating)
             font-size: 13px;
         }
 
-        .review-actions a {
+        .review-actions a,
+        .review-actions button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
             color: #3158ff;
             font-weight: 600;
+        }
+
+        .review-actions .delete-link {
+            color: #d82121;
+        }
+
+        .delete-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.28);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .delete-modal-overlay.show {
+            display: flex;
+        }
+
+        .delete-modal {
+            width: 100%;
+            max-width: 360px;
+            background: #fff;
+            border-radius: 24px;
+            padding: 26px 24px 22px;
+            text-align: center;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            animation: modalPop 0.22s ease;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .delete-modal-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: #fff1f0;
+            color: #ff4d4f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: 700;
+            box-shadow: 0 0 0 8px rgba(255, 77, 79, 0.10);
+        }
+
+        .delete-modal h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .delete-modal p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 22px;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-cancel-btn,
+        .modal-delete-btn {
+            flex: 1;
+            height: 46px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.22s ease;
+        }
+
+        .modal-cancel-btn {
+            background: #f3f3f3;
+            color: #444;
+        }
+
+        .modal-cancel-btn:hover {
+            background: #e7e7e7;
+        }
+
+        .modal-delete-btn {
+            background: #ff4d4f;
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(255, 77, 79, 0.22);
+        }
+
+        .modal-delete-btn:hover {
+            background: #ef3f41;
         }
 
         .empty-state {
@@ -661,10 +767,12 @@ function renderStars($rating)
                                     <?php if ((int)$review['user_id'] === (int)$buyerId) { ?>
                                         <div class="review-actions">
                                             <a href="write_review.php?edit_comment_id=<?php echo (int)$review['comment_id']; ?>">Edit</a>
-                                            <a href="delete_review.php?comment_id=<?php echo (int)$review['comment_id']; ?>"
-                                               onclick="return confirm('Are you sure you want to delete this review?');">
+                                            <button
+                                                type="button"
+                                                class="delete-link"
+                                                onclick="openReviewDeleteModal(<?php echo (int)$review['comment_id']; ?>, <?php echo (int)$review['product_id']; ?>)">
                                                 Delete
-                                            </a>
+                                            </button>
                                         </div>
                                     <?php } ?>
                                 </div>
@@ -732,5 +840,72 @@ function renderStars($rating)
     </footer>
 
 </div>
+<div class="delete-modal-overlay" id="reviewDeleteModalOverlay">
+    <div class="delete-modal">
+        <div class="delete-modal-icon">!</div>
+
+        <h3>Delete review</h3>
+        <p>
+            Are you sure you want to delete this review?<br>
+            This action cannot be undone.
+        </p>
+
+        <div class="delete-modal-actions">
+            <button type="button" class="modal-cancel-btn" onclick="closeReviewDeleteModal()">Cancel</button>
+            <button type="button" class="modal-delete-btn" id="reviewConfirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+</div>
+<script>
+    var reviewDeleteCommentId = 0;
+    var reviewDeleteProductId = 0;
+
+    function openReviewDeleteModal(commentId, productId) {
+        reviewDeleteCommentId = commentId || 0;
+        reviewDeleteProductId = productId || 0;
+        document.getElementById('reviewDeleteModalOverlay').classList.add('show');
+    }
+
+    function closeReviewDeleteModal() {
+        reviewDeleteCommentId = 0;
+        reviewDeleteProductId = 0;
+        document.getElementById('reviewDeleteModalOverlay').classList.remove('show');
+    }
+
+    document.getElementById('reviewConfirmDeleteBtn').addEventListener('click', function () {
+        if (reviewDeleteCommentId > 0 && reviewDeleteProductId > 0) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'deleteComment.php';
+
+            var idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id';
+            idInput.value = reviewDeleteCommentId;
+            form.appendChild(idInput);
+
+            var productInput = document.createElement('input');
+            productInput.type = 'hidden';
+            productInput.name = 'product_id';
+            productInput.value = reviewDeleteProductId;
+            form.appendChild(productInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+
+    document.getElementById('reviewDeleteModalOverlay').addEventListener('click', function (event) {
+        if (event.target === this) {
+            closeReviewDeleteModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeReviewDeleteModal();
+        }
+    });
+</script>
 </body>
 </html>

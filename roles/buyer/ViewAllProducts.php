@@ -13,7 +13,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/view.png";
+    return "../../uploads/products/view.png";
 }
 
 $isSearching = $isSearching ?? false;
@@ -951,7 +951,7 @@ if ($categoryResult) {
                                 <img
                                     src="<?php echo productImagePath($row['image_path']); ?>"
                                     alt="<?php echo htmlspecialchars($row['product_name']); ?>"
-                                    onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
+                                    onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                                 >
                             </div>
 

@@ -778,7 +778,7 @@ foreach ($topProducts as $item) {
                         <?php if (!empty($lowStockProducts)) { ?>
                             <?php foreach ($lowStockProducts as $product) { ?>
                                 <div class="alert-item">
-                                    <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'assets/images/products/view.png'; ?>" alt="Product">
+                                    <img src="/NextPickStore/<?php echo !empty($product['image_path']) ? htmlspecialchars($product['image_path']) : 'uploads/products/view.png'; ?>" alt="Product">
                                     <div class="alert-info">
                                         <h4><?php echo htmlspecialchars($product['product_name']); ?></h4>
                                         <p><?php echo (int)$product['stock_quantity']; ?> units left</p>

@@ -13,7 +13,7 @@ function productImagePath($path)
         return "../../" . htmlspecialchars($path);
     }
 
-    return "../../assets/images/products/view.png";
+    return "../../uploads/products/view.png";
 }
 
 function categoryIcon($categoryName)
@@ -1202,7 +1202,7 @@ $bestSeller = mysqli_query($conn, "
                                         <img 
                                             src="<?php echo productImagePath($row['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($row['product_name']); ?>"
-                                            onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
+                                            onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                                         >
                                     </div>
 
@@ -1269,7 +1269,7 @@ $bestSeller = mysqli_query($conn, "
                                         <img 
                                             src="<?php echo productImagePath($row['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($row['product_name']); ?>"
-                                            onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
+                                            onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                                         >
                                     </div>
 
@@ -1454,7 +1454,7 @@ $bestSeller = mysqli_query($conn, "
                                         <img 
                                             src="<?php echo productImagePath($r['image_path']); ?>"
                                             alt="<?php echo htmlspecialchars($r['product_name']); ?>"
-                                            onerror="this.onerror=null; this.src='../../assets/images/products/view.png';"
+                                            onerror="this.onerror=null; this.src='../../uploads/products/view.png';"
                                         >
                                     </div>
 

@@ -627,7 +627,7 @@ function formatStatusClass($status) {
                                             <tr>
                                                 <td>
                                                     <div class="product-cell">
-                                                        <img src="../../<?php echo htmlspecialchars($order['image_path'] ?: 'assets/images/placeholder.png'); ?>" alt="Product">
+                                                        <img src="../../<?php echo htmlspecialchars($order['image_path'] ?: 'uploads/products/view.png'); ?>" alt="Product">
                                                         <span><?php echo htmlspecialchars($order['product_name']); ?></span>
                                                     </div>
                                                 </td>
