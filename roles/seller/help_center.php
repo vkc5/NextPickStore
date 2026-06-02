@@ -611,6 +611,29 @@ if ($search !== '') {
             .search-box input { padding-right: 12px; }
             .search-submit { position: static; width: 100%; margin-top: 8px; height: 40px; }
         }
+
+        /* SELLER ADMIN-LIKE TOPBAR OVERRIDES */
+        .topbar {
+            background: #fff;
+            border-bottom: none;
+            border-radius: 10px;
+            padding: 16px 22px;
+            margin-bottom: 5px;
+        }
+
+        .topbar > img {
+            height: 24px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .menu-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -633,24 +656,23 @@ if ($search !== '') {
 
         <!-- SIDEBAR -->
         <aside class="sidebar">
-            <h2>Welcome,<br><?php echo htmlspecialchars($firstName); ?></h2>
 
            <ul class="menu">
-    <li><a href="dashboard.php"><img src="../../assets/images/icons/seller icon/dashboard.png" alt="" class="menu-icon-img"><span>Dashboard</span></a></li>
+    <li><a href="dashboard.php"><img src="../../assets/images/icons/admin/home.png" alt="" class="menu-icon-img"><span>Dashboard</span></a></li>
 
-    <li><a href="my_products.php"><img src="../../assets/images/icons/seller icon/inventory-management.png" alt="" class="menu-icon-img"><span>Inventory Management</span></a></li>
+    <li><a href="my_products.php"><img src="../../assets/images/icons/admin/box.png" alt="" class="menu-icon-img"><span>Inventory Management</span></a></li>
 
     <li><a href="add_product.php"><img src="../../assets/images/icons/seller icon/add-to-cart.png" alt="" class="menu-icon-img"><span>Add Product</span></a></li>
 
     <li><a href="orders.php"><img src="../../assets/images/icons/seller icon/manifest.png" alt="" class="menu-icon-img"><span>Orders</span></a></li>
 
-    <li><a href="customer_data.php"><img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
+    <li><a href="customer_data.php"><img src="../../assets/images/icons/admin/users.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
 
-    <li><a href="reports.php"><img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
+    <li><a href="reports.php"><img src="../../assets/images/icons/admin/report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
 
     <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
 
-    <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
+    <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/admin/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
 </ul>
         </aside>
 

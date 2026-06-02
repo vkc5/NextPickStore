@@ -669,6 +669,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 padding-right: 16px;
             }
         }
+
+        /* SELLER ADMIN-LIKE TOPBAR OVERRIDES */
+        .topbar {
+            background: #fff;
+            border-bottom: none;
+            border-radius: 10px;
+            padding: 16px 22px;
+            margin-bottom: 5px;
+        }
+
+        .topbar > img {
+            height: 24px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .menu-icon-img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -688,19 +711,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="main-layout">
         <aside class="sidebar">
-            <h2>Welcome,<br><?php echo htmlspecialchars($firstName); ?></h2>
 
             <ul class="menu">
     <li>
         <a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/dashboard.png" alt="" class="menu-icon-img">
+            <img src="../../assets/images/icons/admin/home.png" alt="" class="menu-icon-img">
             <span>Dashboard</span>
         </a>
     </li>
 
     <li>
         <a href="my_products.php" class="<?= basename($_SERVER['PHP_SELF']) == 'my_products.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/inventory-management.png" alt="" class="menu-icon-img">
+            <img src="../../assets/images/icons/admin/box.png" alt="" class="menu-icon-img">
             <span>Inventory Management</span>
         </a>
     </li>
@@ -721,14 +743,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <li>
         <a href="customer_data.php" class="<?= basename($_SERVER['PHP_SELF']) == 'customer_data.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/client.png" alt="" class="menu-icon-img">
+            <img src="../../assets/images/icons/admin/users.png" alt="" class="menu-icon-img">
             <span>Customer Data</span>
         </a>
     </li>
 
     <li>
         <a href="reports.php" class="<?= basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : '' ?>">
-            <img src="../../assets/images/icons/seller icon/seo-report.png" alt="" class="menu-icon-img">
+            <img src="../../assets/images/icons/admin/report.png" alt="" class="menu-icon-img">
             <span>Analytics & Reports</span>
         </a>
     </li>
@@ -742,7 +764,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <li>
         <a href="../../auth/logout.php">
-            <img src="../../assets/images/icons/seller icon/logout.png" alt="" class="menu-icon-img">
+            <img src="../../assets/images/icons/admin/logout.png" alt="" class="menu-icon-img">
             <span>Log out</span>
         </a>
     </li>
