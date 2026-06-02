@@ -282,6 +282,11 @@ $roleName = $user['role_name'];
                 margin-top: 6px;
             }
 
+            .input-wrapper input.input-error {
+                border-color: #e74c3c;
+                background: #fffafa;
+            }
+
             .id-box,
             .note-box {
                 margin-top: 10px;
@@ -485,9 +490,10 @@ $roleName = $user['role_name'];
                                 <div class="field-group">
                                     <label>Password</label>
                                     <div class="input-wrapper">
-                                        <input type="password" name="password" placeholder="Leave empty to keep current password">
+                                        <input type="password" name="password" id="password" placeholder="Leave empty to keep current password">
                                         <span class="input-icon"></span>
                                     </div>
+                                    <div class="error-text" id="passwordClientError" style="display:none;"></div>
                                     <?php if (!empty($errors['password'])): ?>
                                         <div class="error-text"><?php echo htmlspecialchars($errors['password']); ?></div>
                                     <?php endif; ?>
@@ -533,21 +539,50 @@ $roleName = $user['role_name'];
     <?php include_once dirname(__DIR__, 3) . '/includes/footer.php'; ?>
         </div>
         <script>
-            document.getElementById('adminUserForm').addEventListener('submit', function (event) {
+            const adminUserForm = document.getElementById('adminUserForm');
+            const passwordField = document.getElementById('password');
+            const passwordClientError = document.getElementById('passwordClientError');
+
+            adminUserForm.addEventListener('submit', function (event) {
                 const email = document.querySelector('[name="email"]');
-                const password = document.querySelector('[name="password"]');
                 const fullName = document.querySelector('[name="full_name"]');
                 let valid = true;
 
                 if (!fullName || fullName.value.trim() === '') valid = false;
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) valid = false;
-                if (password && password.value !== '' && !isStrongPassword(password.value)) valid = false;
+                clearPasswordError();
+
+                if (passwordField && passwordField.value !== '' && !isStrongPassword(passwordField.value)) {
+                    showPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.');
+                    valid = false;
+                }
 
                 if (!valid) {
                     event.preventDefault();
-                    alert('Please fill all required user fields correctly. Password must include uppercase, lowercase, number, and symbol.');
                 }
             });
+
+            if (passwordField) {
+                passwordField.addEventListener('input', function () {
+                    if (passwordField.value === '' || isStrongPassword(passwordField.value)) {
+                        clearPasswordError();
+                    } else {
+                        showPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.');
+                    }
+                });
+            }
+
+            function showPasswordError(message) {
+                passwordField.classList.add('input-error');
+                passwordClientError.textContent = message;
+                passwordClientError.style.display = 'block';
+            }
+
+            function clearPasswordError() {
+                passwordField.classList.remove('input-error');
+                passwordClientError.textContent = '';
+                passwordClientError.style.display = 'none';
+            }
 
             function isStrongPassword(value) {
                 return value.length >= 8

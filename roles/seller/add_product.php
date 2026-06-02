@@ -764,6 +764,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </li>
 
     <li>
+        <a href="profile.php" class="<?= basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : '' ?>">
+            <img src="../../assets/images/icons/admin/profile.png" alt="" class="menu-icon-img">
+            <span>My Profile</span>
+        </a>
+    </li>
+
+    <li>
         <a href="../../auth/logout.php">
             <img src="../../assets/images/icons/admin/logout.png" alt="" class="menu-icon-img">
             <span>Log out</span>

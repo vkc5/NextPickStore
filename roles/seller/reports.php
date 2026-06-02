@@ -499,6 +499,7 @@ $queryBase = http_build_query([
                 <li><a href="customer_data.php"><img src="../../assets/images/icons/admin/users.png" alt="" class="menu-icon-img"><span>Customer Data</span></a></li>
                 <li><a href="reports.php" class="active"><img src="../../assets/images/icons/admin/report.png" alt="" class="menu-icon-img"><span>Analytics & Reports</span></a></li>
                 <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
+                <li><a href="profile.php"><img src="../../assets/images/icons/admin/profile.png" alt="" class="menu-icon-img"><span>My Profile</span></a></li>
                 <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/admin/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
             </ul>
         </aside>

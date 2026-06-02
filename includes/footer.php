@@ -121,7 +121,7 @@ $footerBase = '/NextPickStore/public';
         </div>
     </div>
     <div class="footer-bottom">
-        <div>&copy; 2024 NEXTPICK. All Rights Reserved.</div>
+        <div>&copy; 2026 NEXTPICK. All Rights Reserved.</div>
         <div class="footer-links">
             <a href="<?php echo $footerBase; ?>/privacy_policy.php">Privacy policy</a>
             <a href="<?php echo $footerBase; ?>/cookie_settings.php">Cookie settings</a>

@@ -508,6 +508,8 @@ $current = $helpTopics[$topic];
 
     <li><a href="help_center.php"><img src="../../assets/images/icons/seller icon/customer-support.png" alt="" class="menu-icon-img"><span>Help Center</span></a></li>
 
+    <li><a href="profile.php"><img src="../../assets/images/icons/admin/profile.png" alt="" class="menu-icon-img"><span>My Profile</span></a></li>
+
     <li><a href="../../auth/logout.php"><img src="../../assets/images/icons/admin/logout.png" alt="" class="menu-icon-img"><span>Log out</span></a></li>
 </ul>
         </aside>
