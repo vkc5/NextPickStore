@@ -1,9 +1,7 @@
 <?php
-include_once '../../includes/auth_guard.php';
-include_once '../../includes/config.php';
 include_once '../../includes/session.php';
-
-requireRole(['Buyer']);
+include_once '../../includes/functions.php';
+include_once '../../includes/config.php';
 
 $conn = getConnection();
 
@@ -26,7 +24,8 @@ function tableColumnExists($conn, $tableName, $columnName)
 }
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$userId = $_SESSION['user_id'] ?? 0;
+$isBuyerSession = isLoggedIn() && (getUserRole() === 'Buyer');
+$userId = $isBuyerSession ? (int)($_SESSION['user_id'] ?? 0) : 0;
 $hasSpecifications = tableColumnExists($conn, 'nps_products', 'specifications');
 $specificationsSelect = $hasSpecifications ? "p.specifications" : "NULL AS specifications";
 
@@ -149,15 +148,23 @@ if ($catResult) {
 
 /* === PRODUCT VIEW TRACKING === */
 if ($product) {
-    $stmt = mysqli_prepare($conn, "
-        INSERT INTO nps_product_views (product_id, user_id, view_date)
-        VALUES (?, ?, NOW())
-    ");
+    if ($userId > 0) {
+        $stmt = mysqli_prepare($conn, "
+            INSERT INTO nps_product_views (product_id, user_id, view_date)
+            VALUES (?, ?, NOW())
+        ");
 
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            $product['view_count'] = (int)($product['view_count'] ?? 0) + 1;
+        }
+    } else {
+        mysqli_query($conn, "
+            INSERT INTO nps_product_views (product_id, user_id, view_date)
+            VALUES (" . (int)$id . ", NULL, NOW())
+        ");
         $product['view_count'] = (int)($product['view_count'] ?? 0) + 1;
     }
 }
@@ -167,6 +174,12 @@ $ratingCount = $product ? (int)($product['rating_count'] ?? 0) : 0;
 $viewCount = $product ? (int)($product['view_count'] ?? 0) : 0;
 $inStock = $product && isset($product['stock_quantity']) && (int)$product['stock_quantity'] > 0;
 $stockText = $inStock ? 'In Stock' : 'Out of Stock';
+$returnTo = '/NextPickStore/roles/buyer/productDetails.php?id=' . $id;
+$ordersUrl = $isBuyerSession ? 'orders.php' : loginUrl('/NextPickStore/roles/buyer/orders.php');
+$profileUrl = $isBuyerSession ? 'profile.php' : loginUrl('/NextPickStore/roles/buyer/profile.php');
+$cartNavUrl = $isBuyerSession ? 'cart.php' : loginUrl('/NextPickStore/roles/buyer/cart.php');
+$authUrl = $isBuyerSession ? '../../auth/logout.php' : loginUrl($returnTo);
+$authLabel = $isBuyerSession ? 'Logout' : 'Login';
 
 $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product Details';
 ?>
@@ -1153,10 +1166,10 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
             </form>
 
             <div class="nav-actions">
-                <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
-                <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
-                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
-                <a href="../../auth/logout.php" class="logout-btn">Logout</a>
+                <a href="<?php echo htmlspecialchars($cartNavUrl); ?>" class="icon-btn" title="Cart">🛒</a>
+                <a href="<?php echo htmlspecialchars($ordersUrl); ?>" class="icon-btn" title="Orders">🧾</a>
+                <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="icon-btn profile-link" title="Profile">👤</a>
+                <a href="<?php echo htmlspecialchars($authUrl); ?>" class="logout-btn"><?php echo $authLabel; ?></a>
             </div>
 
         </div>
@@ -1268,6 +1281,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
 
                     <form method="POST" action="addToCart.php">
                         <input type="hidden" name="product_id" value="<?php echo (int)$product['product_id']; ?>">
+                        <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($returnTo); ?>">
 
                         <div class="quantity-row">
                             <label for="quantity">Quantity</label>
@@ -1418,6 +1432,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
 
                 <form class="review-form" method="POST" action="addComment.php">
                     <input type="hidden" name="product_id" value="<?php echo (int)$id; ?>">
+                    <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($returnTo); ?>">
 
                     <div class="form-row">
                         <div class="form-group">

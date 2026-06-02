@@ -11,6 +11,7 @@ $conn = getConnection();
 
 $email = sanitize($_POST['email'] ?? '');
 $password = trim($_POST['password'] ?? '');
+$returnTo = safeReturnTo($_POST['return_to'] ?? '');
 
 $errors = [];
 $old = [
@@ -40,6 +41,7 @@ if ($password === '') {
 if (!empty($errors)) {
     $_SESSION['login_errors'] = $errors;
     $_SESSION['login_old'] = $old;
+    $_SESSION['login_return_to'] = $returnTo;
     redirect('/NextPickStore/auth/login.php');
 }
 
@@ -67,6 +69,7 @@ if (!$stmt) {
         'general' => 'Something went wrong. Please try again later.'
     ];
     $_SESSION['login_old'] = $old;
+    $_SESSION['login_return_to'] = $returnTo;
     redirect('/NextPickStore/auth/login.php');
 }
 
@@ -87,6 +90,7 @@ if (!$user) {
         'general' => 'Incorrect email or password.'
     ];
     $_SESSION['login_old'] = $old;
+    $_SESSION['login_return_to'] = $returnTo;
     redirect('/NextPickStore/auth/login.php');
 }
 
@@ -100,6 +104,7 @@ if ($user['status'] !== 'active') {
         'general' => 'Your account is not active. Please contact support.'
     ];
     $_SESSION['login_old'] = $old;
+    $_SESSION['login_return_to'] = $returnTo;
     redirect('/NextPickStore/auth/login.php');
 }
 
@@ -113,6 +118,7 @@ if (!password_verify($password, $user['password_hash'])) {
         'general' => 'Incorrect email or password.'
     ];
     $_SESSION['login_old'] = $old;
+    $_SESSION['login_return_to'] = $returnTo;
     redirect('/NextPickStore/auth/login.php');
 }
 
@@ -127,10 +133,15 @@ $_SESSION['user_id'] = $user['user_id'];
 $_SESSION['full_name'] = $user['full_name'];
 $_SESSION['email'] = $user['email'];
 $_SESSION['role_name'] = $user['role_name'];
+unset($_SESSION['login_return_to']);
 
 /*
 |--------------------------------------------------------------------------
 | Redirect by role
 |--------------------------------------------------------------------------
 */
+if ($user['role_name'] === 'Buyer' && $returnTo !== '') {
+    redirect($returnTo);
+}
+
 redirectByRole($user['role_name']);

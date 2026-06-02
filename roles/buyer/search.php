@@ -1,8 +1,5 @@
 <?php
-include_once '../../includes/auth_guard.php';
 include_once '../../includes/config.php';
-
-requireRole(['Buyer']);
 
 class Search
 {

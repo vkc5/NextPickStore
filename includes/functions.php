@@ -8,6 +8,35 @@ function redirect($path) {
     exit();
 }
 
+function safeReturnTo($path) {
+    $path = trim((string)$path);
+
+    if ($path === '') {
+        return '';
+    }
+
+    if (strpos($path, '/NextPickStore/') !== 0) {
+        return '';
+    }
+
+    if (strpos($path, '/auth/login.php') !== false) {
+        return '';
+    }
+
+    return $path;
+}
+
+function loginUrl($returnTo = '') {
+    $url = '/NextPickStore/auth/login.php';
+    $returnTo = safeReturnTo($returnTo);
+
+    if ($returnTo !== '') {
+        $url .= '?return_to=' . urlencode($returnTo);
+    }
+
+    return $url;
+}
+
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
 }

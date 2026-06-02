@@ -2,11 +2,24 @@
 include_once '../includes/session.php';
 include_once '../includes/functions.php';
 
+if (!function_exists('safeReturnTo')) {
+    function safeReturnTo($path) {
+        $path = trim((string)$path);
+
+        if ($path === '' || strpos($path, '/NextPickStore/') !== 0 || strpos($path, '/auth/login.php') !== false) {
+            return '';
+        }
+
+        return $path;
+    }
+}
+
 if (isLoggedIn()) {
     redirectByRole(getUserRole());
 }
 
-unset($_SESSION['login_errors'], $_SESSION['login_old']);
+$returnTo = safeReturnTo($_GET['return_to'] ?? ($_SESSION['login_return_to'] ?? ''));
+unset($_SESSION['login_errors'], $_SESSION['login_old'], $_SESSION['login_return_to']);
 ?>
 
 <!DOCTYPE html>
@@ -262,7 +275,12 @@ unset($_SESSION['login_errors'], $_SESSION['login_old']);
                         <?php endif; ?>
                     </div>
 
-                    <a href="forgot_password.php" class="forgot-password">Forgot Password?</a>
+                    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin:4px 0 16px; flex-wrap:wrap;">
+                        <a href="forgot_password.php" class="forgot-password" style="margin:0;">Forgot Password?</a>
+                        <a href="/NextPickStore/roles/buyer/dashboard.php" class="forgot-password" style="margin:0;">Continue as Guest</a>
+                    </div>
+
+                    <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($returnTo); ?>">
                     
                     <button type="submit" class="login-btn">Login</button>
 

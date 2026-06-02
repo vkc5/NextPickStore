@@ -1,13 +1,17 @@
 <?php
-include_once '../../includes/auth_guard.php';
-include_once '../../includes/config.php';
 include_once '../../includes/session.php';
-
-requireRole(['Buyer']);
+include_once '../../includes/functions.php';
+include_once '../../includes/config.php';
 
 $conn = getConnection();
 
-$userId = $_SESSION['user_id'] ?? 0;
+$returnTo = safeReturnTo($_POST['return_to'] ?? '/NextPickStore/roles/buyer/dashboard.php');
+
+if (!isLoggedIn() || (getUserRole() !== 'Buyer')) {
+    redirect(loginUrl($returnTo));
+}
+
+$userId = (int)($_SESSION['user_id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: dashboard.php");

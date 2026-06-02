@@ -1,9 +1,8 @@
 <?php
-include_once '../../includes/auth_guard.php';
+include_once '../../includes/session.php';
+include_once '../../includes/functions.php';
 include_once '../../includes/config.php';
 include 'search.php';
-
-requireRole(['Buyer']);
 
 $conn = getConnection();
 
@@ -169,6 +168,14 @@ if ($categoryResult) {
         $categoriess[] = $r;
     }
 }
+
+$isBuyerSession = isLoggedIn() && (getUserRole() === 'Buyer');
+$currentReturnUrl = safeReturnTo($_SERVER['REQUEST_URI'] ?? '/NextPickStore/roles/buyer/dashboard.php');
+$cartUrl = $isBuyerSession ? 'cart.php' : loginUrl('/NextPickStore/roles/buyer/cart.php');
+$ordersUrl = $isBuyerSession ? 'orders.php' : loginUrl('/NextPickStore/roles/buyer/orders.php');
+$profileUrl = $isBuyerSession ? 'profile.php' : loginUrl('/NextPickStore/roles/buyer/profile.php');
+$authUrl = $isBuyerSession ? '../../auth/logout.php' : loginUrl($currentReturnUrl);
+$authLabel = $isBuyerSession ? 'Logout' : 'Login';
 ?>
 
 <!DOCTYPE html>
@@ -873,10 +880,10 @@ if ($categoryResult) {
             </form>
 
             <div class="nav-actions">
-                <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
-                <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
-                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
-                <a href="../../auth/logout.php" class="logout-btn">Logout</a>
+                <a href="<?php echo htmlspecialchars($cartUrl); ?>" class="icon-btn" title="Cart">🛒</a>
+                <a href="<?php echo htmlspecialchars($ordersUrl); ?>" class="icon-btn" title="Orders">🧾</a>
+                <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="icon-btn profile-link" title="Profile">👤</a>
+                <a href="<?php echo htmlspecialchars($authUrl); ?>" class="logout-btn"><?php echo $authLabel; ?></a>
             </div>
 
         </div>
