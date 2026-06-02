@@ -1,0 +1,103 @@
+.products-dropdown {
+    position: relative;
+    z-index: 50;
+}
+
+.products-dropdown .all-products-btn {
+    gap: 10px;
+    border: 1px solid #dfe6ff;
+    background: #ffffff;
+    color: #111827;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.products-dropdown .all-products-btn::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 180ms ease;
+}
+
+.products-dropdown::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 46px;
+    height: 14px;
+}
+
+.products-dropdown:hover .all-products-btn,
+.products-dropdown:focus-within .all-products-btn {
+    background: #f7f9ff;
+    border-color: #3158ff;
+    color: #1A4DE1;
+    box-shadow: 0 12px 26px rgba(49, 88, 255, 0.12);
+}
+
+.products-dropdown:hover .all-products-btn::after,
+.products-dropdown:focus-within .all-products-btn::after {
+    transform: rotate(225deg) translate(-2px, -1px);
+}
+
+.products-dropdown .dropdown-menu {
+    display: block !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+}
+
+.products-dropdown:hover .dropdown-menu,
+.products-dropdown:focus-within .dropdown-menu {
+    display: block !important;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.dropdown-menu {
+    padding: 8px;
+}
+
+.dropdown-menu a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+}
+
+.dropdown-menu a::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3158ff;
+    opacity: 0;
+    transform: scale(0.5);
+    margin-right: 0;
+    transition: opacity 160ms ease, transform 160ms ease, margin-right 160ms ease;
+}
+
+.dropdown-menu a:hover::before,
+.dropdown-menu a.active::before {
+    opacity: 1;
+    transform: scale(1);
+    margin-right: 8px;
+}
+
+.nav-actions .profile-link {
+    background: #fff7df;
+    color: #946200;
+}
+
+.nav-actions .profile-link:hover,
+.nav-actions .profile-link.active {
+    background: #fff0bd;
+    color: #6f4800;
+}

@@ -202,6 +202,7 @@ $total = max(0, $subtotal + $shipping - $discount);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Cart - NextPick</title>
+    <link rel="stylesheet" href="../../assets/css/buyer-dropdown.css">
 
     <style>
         *, *::before, *::after {
@@ -923,6 +924,7 @@ $total = max(0, $subtotal + $shipping - $discount);
             <div class="nav-actions">
                 <a href="cart.php" class="icon-btn active" title="Cart">🛒</a>
                 <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
+                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 

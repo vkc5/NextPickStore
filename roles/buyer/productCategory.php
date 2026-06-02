@@ -78,6 +78,7 @@ if ($catResult) { while ($r = mysqli_fetch_assoc($catResult)) { $categoriess[] =
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($categoryName); ?> - NextPick</title>
+    <link rel="stylesheet" href="../../assets/css/buyer-dropdown.css">
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -373,7 +374,8 @@ if ($catResult) { while ($r = mysqli_fetch_assoc($catResult)) { $categoriess[] =
 
             <div class="nav-actions">
                 <a href="cart.php"    class="icon-btn" title="Cart">🛒</a>
-                <a href="profile/"    class="icon-btn" title="Wishlist">♡</a>
+                <a href="orders.php"  class="icon-btn" title="Orders">🧾</a>
+                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 

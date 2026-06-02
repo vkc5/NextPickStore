@@ -16,8 +16,19 @@ function productImagePath($path)
     return "../../assets/images/products/view.png";
 }
 
+function tableColumnExists($conn, $tableName, $columnName)
+{
+    $tableName = mysqli_real_escape_string($conn, $tableName);
+    $columnName = mysqli_real_escape_string($conn, $columnName);
+
+    $result = mysqli_query($conn, "SHOW COLUMNS FROM `$tableName` LIKE '$columnName'");
+    return $result && mysqli_num_rows($result) > 0;
+}
+
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $userId = $_SESSION['user_id'] ?? 0;
+$hasSpecifications = tableColumnExists($conn, 'nps_products', 'specifications');
+$specificationsSelect = $hasSpecifications ? "p.specifications" : "NULL AS specifications";
 
 /* === PRODUCT DETAILS === */
 $stmt = mysqli_prepare($conn, "
@@ -30,18 +41,32 @@ $stmt = mysqli_prepare($conn, "
         p.price,
         p.stock_quantity,
         p.category_id,
-        ROUND(AVG(r.rating_value), 2) AS Rating,
+        {$specificationsSelect},
+        (
+            SELECT ROUND(AVG(r2.rating_value), 2)
+            FROM nps_ratings r2
+            WHERE r2.product_id = p.product_id
+        ) AS Rating,
+        (
+            SELECT COUNT(*)
+            FROM nps_ratings r3
+            WHERE r3.product_id = p.product_id
+        ) AS rating_count,
+        (
+            SELECT COUNT(*)
+            FROM nps_product_views pv
+            WHERE pv.product_id = p.product_id
+        ) AS view_count,
         pi.image_path,
         u.full_name AS seller_name,
         c.category_name
     FROM nps_products p
     INNER JOIN nps_users u ON p.seller_id = u.user_id
-    LEFT JOIN nps_ratings r ON p.product_id = r.product_id
     LEFT JOIN nps_product_images pi ON p.product_id = pi.product_id AND pi.is_primary = 1
     LEFT JOIN nps_categories c ON p.category_id = c.category_id
     WHERE p.product_id = ?
       AND p.publish_status = 'published'
-    GROUP BY p.product_id
+    LIMIT 1
 ");
 
 mysqli_stmt_bind_param($stmt, "i", $id);
@@ -133,10 +158,13 @@ if ($product) {
         mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
+        $product['view_count'] = (int)($product['view_count'] ?? 0) + 1;
     }
 }
 
 $averageRating = $product && $product['Rating'] ? $product['Rating'] : '0.00';
+$ratingCount = $product ? (int)($product['rating_count'] ?? 0) : 0;
+$viewCount = $product ? (int)($product['view_count'] ?? 0) : 0;
 $inStock = $product && isset($product['stock_quantity']) && (int)$product['stock_quantity'] > 0;
 $stockText = $inStock ? 'In Stock' : 'Out of Stock';
 
@@ -149,6 +177,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?> - NextPick</title>
+    <link rel="stylesheet" href="../../assets/css/buyer-dropdown.css">
 
     <style>
         *, *::before, *::after {
@@ -1018,6 +1047,7 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
             <div class="nav-actions">
                 <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
                 <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
+                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 
@@ -1085,7 +1115,12 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                     <div class="meta-grid">
                         <div class="meta-box">
                             <span>Average Rating</span>
-                            <strong class="rating-val">★ <?php echo htmlspecialchars($averageRating); ?></strong>
+                            <strong class="rating-val">★ <?php echo htmlspecialchars($averageRating); ?> (<?php echo $ratingCount; ?>)</strong>
+                        </div>
+
+                        <div class="meta-box">
+                            <span>Product Views</span>
+                            <strong><?php echo number_format($viewCount); ?> views</strong>
                         </div>
 
                         <div class="meta-box">
@@ -1182,6 +1217,42 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                 </p>
             </section>
 
+            <!-- SPECIFICATIONS -->
+            <section class="section-card">
+                <div class="section-card-header">
+                    <span class="sec-label">Specs</span>
+                    <h2>Product Specifications</h2>
+                </div>
+
+                <div class="meta-grid">
+                    <div class="meta-box">
+                        <span>Brand</span>
+                        <strong><?php echo htmlspecialchars($product['brand'] ?: 'Not specified'); ?></strong>
+                    </div>
+
+                    <div class="meta-box">
+                        <span>Category</span>
+                        <strong><?php echo htmlspecialchars($product['category_name'] ?: 'Not specified'); ?></strong>
+                    </div>
+
+                    <div class="meta-box">
+                        <span>Availability</span>
+                        <strong><?php echo htmlspecialchars($stockText); ?></strong>
+                    </div>
+
+                    <div class="meta-box">
+                        <span>Stock Quantity</span>
+                        <strong><?php echo (int)$product['stock_quantity']; ?> units</strong>
+                    </div>
+                </div>
+
+                <?php if (!empty($product['specifications'])): ?>
+                    <p style="margin-top:16px;">
+                        <?php echo nl2br(htmlspecialchars($product['specifications'])); ?>
+                    </p>
+                <?php endif; ?>
+            </section>
+
             <!-- ADD REVIEW -->
             <section class="section-card">
                 <div class="section-card-header">
@@ -1207,6 +1278,12 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                     </div>
                 <?php endif; ?>
 
+                <?php if (isset($_GET['success']) && $_GET['success'] === 'rating_deleted'): ?>
+                    <div class="review-message success-msg">
+                        Your rating was deleted successfully.
+                    </div>
+                <?php endif; ?>
+
                 <?php if (isset($_GET['error']) && $_GET['error'] === 'empty'): ?>
                     <div class="review-message error-msg">
                         Please write a comment or choose a rating.
@@ -1222,6 +1299,12 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                 <?php if (isset($_GET['error']) && $_GET['error'] === 'delete_failed'): ?>
                     <div class="review-message error-msg">
                         Comment could not be deleted. Please try again.
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($_GET['error']) && $_GET['error'] === 'rating_delete_failed'): ?>
+                    <div class="review-message error-msg">
+                        Rating could not be deleted. Please try again.
                     </div>
                 <?php endif; ?>
 
@@ -1257,6 +1340,17 @@ $pageTitle = $product ? htmlspecialchars($product['product_name']) : 'Product De
                     <button type="submit" class="submit-review-btn">
                         Submit Review
                     </button>
+
+                    <?php if ($userRating !== ''): ?>
+                        <a
+                            href="deleteRating.php?product_id=<?php echo (int)$id; ?>"
+                            class="submit-review-btn"
+                            style="background:#fff1f1;color:#d82121;text-decoration:none;"
+                            onclick="return confirm('Delete your rating for this product?');"
+                        >
+                            Delete Rating
+                        </a>
+                    <?php endif; ?>
                 </form>
             </section>
 

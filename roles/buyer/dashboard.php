@@ -165,6 +165,7 @@ $bestSeller = mysqli_query($conn, "
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buyer Dashboard - NextPick</title>
+    <link rel="stylesheet" href="../../assets/css/buyer-dropdown.css">
 
     <style>
         *, *::before, *::after {
@@ -1124,6 +1125,7 @@ $bestSeller = mysqli_query($conn, "
             <div class="nav-actions">
                 <a href="cart.php" class="icon-btn" title="Cart">🛒</a>
                 <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
+                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 

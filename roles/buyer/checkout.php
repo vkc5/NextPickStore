@@ -356,6 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - NextPick</title>
+    <link rel="stylesheet" href="../../assets/css/buyer-dropdown.css">
 
     <style>
         *, *::before, *::after {
@@ -1183,6 +1184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             <div class="nav-actions">
                 <a href="cart.php" class="icon-btn active" title="Cart">🛒</a>
                 <a href="orders.php" class="icon-btn" title="Orders">🧾</a>
+                <a href="profile.php" class="icon-btn profile-link" title="Profile">👤</a>
                 <a href="../../auth/logout.php" class="logout-btn">Logout</a>
             </div>
 
